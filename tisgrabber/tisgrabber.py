@@ -110,6 +110,48 @@ def declareFunctions(ic):
     ic.IC_CloseLibrary.restype = None
     ic.IC_CloseLibrary.argtypes = None
 
+    ic.IC_OpenVideoCaptureDevice.restype = c_int
+    ic.IC_OpenVideoCaptureDevice.argtypes = (POINTER(HGRABBER), c_char_p)
+
+    ic.IC_CloseVideoCaptureDevice.restype = None
+    ic.IC_CloseVideoCaptureDevice.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_GetDeviceName.restype = c_char_p
+    ic.IC_GetDeviceName.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_GetVideoFormatWidth.restype = c_int
+    ic.IC_GetVideoFormatWidth.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_GetVideoFormatHeight.restype = c_int
+    ic.IC_GetVideoFormatHeight.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_SetFormat.restype = c_int
+    ic.IC_SetFormat.argtypes = (POINTER(HGRABBER), c_int)
+
+    ic.IC_GetFormat.restype = c_int
+    ic.IC_GetFormat.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_SetVideoFormat.restype = c_int
+    ic.IC_SetVideoFormat.argtypes = (POINTER(HGRABBER), c_char_p)
+
+    ic.IC_SetVideoNorm.restype = c_int
+    ic.IC_SetVideoNorm.argtypes = (POINTER(HGRABBER), c_char_p)
+
+    ic.IC_SetInputChannel.restype = c_int
+    ic.IC_SetInputChannel.argtypes = (POINTER(HGRABBER), c_int)
+
+    ic.IC_StartLive.restype = c_int
+    ic.IC_StartLive.argtypes = (POINTER(HGRABBER), c_int)
+
+    ic.IC_PrepareLive.restype = c_int
+    ic.IC_PrepareLive.argtypes = (POINTER(HGRABBER), c_int)
+
+    ic.IC_SuspendLive.restype = c_int
+    ic.IC_SuspendLive.argtypes = (POINTER(HGRABBER),)
+
+    ic.IC_StopLive.restype = None
+    ic.IC_StopLive.argtypes = (POINTER(HGRABBER),)
+
     ic.IC_ShowDeviceSelectionDialog.restype = POINTER(HGRABBER)
 
     ic.IC_LoadDeviceStateFromFile.restype = POINTER(HGRABBER)
@@ -190,7 +232,6 @@ def declareFunctions(ic):
     ic.ENUMCODECCB = CFUNCTYPE(c_void_p, c_char_p, py_object)
     ic.IC_enumCodecs.argtypes = (ic.ENUMCODECCB, py_object)
 
-    ic.IC_GetDeviceName.restype = c_char_p
     ic.IC_GetDevice.restype = c_char_p
     ic.IC_GetUniqueNamefromList.restype = c_char_p
 
