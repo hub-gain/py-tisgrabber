@@ -213,7 +213,7 @@ def openDevice(ic):
         hGrabber = ic.IC_LoadDeviceStateFromFile(None, T("device.xml"))
         if not ic.IC_IsDevValid(hGrabber):
             hGrabber = ic.IC_ShowDeviceSelectionDialog(None)
-    except Exception as ex:
+    except Exception:
         hGrabber = ic.IC_ShowDeviceSelectionDialog(None)
 
     if ic.IC_IsDevValid(hGrabber):
