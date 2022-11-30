@@ -41,9 +41,8 @@ IC_FILE_NOT_FOUND = 35
 
 class HGRABBER(ctypes.Structure):
     """
-    This class is used to handle the pointer to the internal
-    Grabber class, which contains the camera.
-    A pointer to this class is used by tisgrabber DLL.
+    This class is used to handle the pointer to the internal Grabber class, which
+    contains the camera. A pointer to this class is used by tisgrabber DLL.
     """
 
     _fields_ = [("unused", ctypes.c_int)]
@@ -51,8 +50,7 @@ class HGRABBER(ctypes.Structure):
 
 class HCODEC(ctypes.Structure):
     """
-    This class is used to handle the pointer to the internal
-    codec class for AVI capture
+    This class is used to handle the pointer to the internal codec class for AVI capture
     A pointer to this class is used by tisgrabber DLL.
     """
 
@@ -61,8 +59,8 @@ class HCODEC(ctypes.Structure):
 
 class FILTERPARAMETER(ctypes.Structure):
     """
-    This class implements the structure of a frame filter
-    parameter used by the HFRAMEFILTER class
+    This class implements the structure of a frame filter parameter used by the
+    HFRAMEFILTER class
     """
 
     _fields_ = [("Name", ctypes.c_char * 30), ("Type", ctypes.c_int)]
@@ -70,8 +68,7 @@ class FILTERPARAMETER(ctypes.Structure):
 
 class HFRAMEFILTER(ctypes.Structure):
     """
-    This class implements the structure of a frame filter used
-    by the tisgrabber.dll.
+    This class implements the structure of a frame filter used by the tisgrabber.dll.
     """
 
     _fields_ = [
@@ -85,6 +82,7 @@ class HFRAMEFILTER(ctypes.Structure):
 def declareFunctions(ic):
     """
     Functions returning a HGRABBER Handle must set their restype to POINTER(HGRABBER)
+
     :param ic: The loaded tisgrabber*.dll
     """
     ic.IC_ShowDeviceSelectionDialog.restype = ctypes.POINTER(HGRABBER)
@@ -181,8 +179,10 @@ def declareFunctions(ic):
 
 
 def T(instr):
-    """Helper function
+    """
+    Helper function
     Encodes the input string to utf-8
+
     :param instr: Python string to be converted
     :return: converted string
     """
@@ -190,8 +190,10 @@ def T(instr):
 
 
 def D(instr):
-    """Helper function
+    """
+    Helper function
     Decodes instr utf-8
+
     :param instr: Python string to be converted
     :return: converted string
     """
@@ -199,10 +201,12 @@ def D(instr):
 
 
 def openDevice(ic):
-    """Helper functions
-    Open a camera. If a file with a device state exists, it will be used.
-    If not, the device selection dialog is shown and if a valid devices
-    was selected, the device state file is created.
+    """
+    Helper functions
+    Open a camera. If a file with a device state exists, it will be used. If not, the
+    device selection dialog is shown and if a valid devices was selected, the device
+    state file is created.
+
     :return: a HGRABBER
     """
     try:
