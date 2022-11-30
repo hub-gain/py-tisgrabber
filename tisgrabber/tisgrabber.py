@@ -1,4 +1,17 @@
-import ctypes
+from ctypes import (
+    CFUNCTYPE,
+    POINTER,
+    Structure,
+    c_char,
+    c_char_p,
+    c_float,
+    c_int,
+    c_long,
+    c_ubyte,
+    c_ulong,
+    c_void_p,
+    py_object,
+)
 from enum import Enum
 
 
@@ -39,43 +52,43 @@ IC_DEVICE_NOT_FOUND = -5
 IC_FILE_NOT_FOUND = 35
 
 
-class HGRABBER(ctypes.Structure):
+class HGRABBER(Structure):
     """
     This class is used to handle the pointer to the internal Grabber class, which
     contains the camera. A pointer to this class is used by tisgrabber DLL.
     """
 
-    _fields_ = [("unused", ctypes.c_int)]
+    _fields_ = [("unused", c_int)]
 
 
-class HCODEC(ctypes.Structure):
+class HCODEC(Structure):
     """
     This class is used to handle the pointer to the internal codec class for AVI capture
     A pointer to this class is used by tisgrabber DLL.
     """
 
-    _fields_ = [("unused", ctypes.c_int)]
+    _fields_ = [("unused", c_int)]
 
 
-class FILTERPARAMETER(ctypes.Structure):
+class FILTERPARAMETER(Structure):
     """
     This class implements the structure of a frame filter parameter used by the
     HFRAMEFILTER class
     """
 
-    _fields_ = [("Name", ctypes.c_char * 30), ("Type", ctypes.c_int)]
+    _fields_ = [("Name", c_char * 30), ("Type", c_int)]
 
 
-class HFRAMEFILTER(ctypes.Structure):
+class HFRAMEFILTER(Structure):
     """
     This class implements the structure of a frame filter used by the tisgrabber.dll.
     """
 
     _fields_ = [
-        ("pFilter", ctypes.c_void_p),
-        ("bHasDialog", ctypes.c_int),
-        ("ParameterCount", ctypes.c_int),
-        ("Parameters", ctypes.POINTER(FILTERPARAMETER)),
+        ("pFilter", c_void_p),
+        ("bHasDialog", c_int),
+        ("ParameterCount", c_int),
+        ("Parameters", POINTER(FILTERPARAMETER)),
     ]
 
 
@@ -85,97 +98,93 @@ def declareFunctions(ic):
 
     :param ic: The loaded tisgrabber*.dll
     """
-    ic.IC_ShowDeviceSelectionDialog.restype = ctypes.POINTER(HGRABBER)
-    ic.IC_ReleaseGrabber.argtypes = (ctypes.POINTER(ctypes.POINTER(HGRABBER)),)
+    ic.IC_ShowDeviceSelectionDialog.restype = POINTER(HGRABBER)
+    ic.IC_ReleaseGrabber.argtypes = (POINTER(POINTER(HGRABBER)),)
 
-    ic.IC_LoadDeviceStateFromFile.restype = ctypes.POINTER(HGRABBER)
-    ic.IC_CreateGrabber.restype = ctypes.POINTER(HGRABBER)
+    ic.IC_LoadDeviceStateFromFile.restype = POINTER(HGRABBER)
+    ic.IC_CreateGrabber.restype = POINTER(HGRABBER)
 
     ic.IC_GetPropertyValueRange.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.c_char_p,
-        ctypes.c_char_p,
-        ctypes.POINTER(ctypes.c_long),
-        ctypes.POINTER(ctypes.c_long),
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_long),
+        POINTER(c_long),
     )
 
     ic.IC_GetPropertyValue.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.c_char_p,
-        ctypes.c_char_p,
-        ctypes.POINTER(ctypes.c_long),
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_long),
     )
 
     ic.IC_GetPropertyAbsoluteValue.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.c_char_p,
-        ctypes.c_char_p,
-        ctypes.POINTER(ctypes.c_float),
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_float),
     )
 
     ic.IC_GetPropertyAbsoluteValueRange.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.c_char_p,
-        ctypes.c_char_p,
-        ctypes.POINTER(ctypes.c_float),
-        ctypes.POINTER(ctypes.c_float),
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_float),
+        POINTER(c_float),
     )
 
     ic.IC_GetPropertySwitch.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.c_char_p,
-        ctypes.c_char_p,
-        ctypes.POINTER(ctypes.c_long),
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_long),
     )
 
     ic.IC_GetImageDescription.argtypes = (
-        ctypes.POINTER(HGRABBER),
-        ctypes.POINTER(ctypes.c_long),
-        ctypes.POINTER(ctypes.c_long),
-        ctypes.POINTER(ctypes.c_int),
-        ctypes.POINTER(ctypes.c_int),
+        POINTER(HGRABBER),
+        POINTER(c_long),
+        POINTER(c_long),
+        POINTER(c_int),
+        POINTER(c_int),
     )
 
-    ic.IC_GetImagePtr.restype = ctypes.c_void_p
+    ic.IC_GetImagePtr.restype = c_void_p
 
-    ic.IC_SetHWnd.argtypes = (ctypes.POINTER(HGRABBER), ctypes.c_int)
+    ic.IC_SetHWnd.argtypes = (POINTER(HGRABBER), c_int)
     # definition of the frameready callback
-    ic.FRAMEREADYCALLBACK = ctypes.CFUNCTYPE(
-        ctypes.c_void_p,
-        ctypes.POINTER(HGRABBER),
-        ctypes.POINTER(ctypes.c_ubyte),
-        ctypes.c_ulong,
-        ctypes.py_object,
+    ic.FRAMEREADYCALLBACK = CFUNCTYPE(
+        c_void_p,
+        POINTER(HGRABBER),
+        POINTER(c_ubyte),
+        c_ulong,
+        py_object,
     )
-    ic.DEVICELOSTCALLBACK = ctypes.CFUNCTYPE(
-        ctypes.c_void_p, ctypes.POINTER(HGRABBER), ctypes.py_object
-    )
+    ic.DEVICELOSTCALLBACK = CFUNCTYPE(c_void_p, POINTER(HGRABBER), py_object)
 
     ic.IC_SetFrameReadyCallback.argtypes = [
-        ctypes.POINTER(HGRABBER),
+        POINTER(HGRABBER),
         ic.FRAMEREADYCALLBACK,
-        ctypes.py_object,
+        py_object,
     ]
     ic.IC_SetCallbacks.argtypes = [
-        ctypes.POINTER(HGRABBER),
+        POINTER(HGRABBER),
         ic.FRAMEREADYCALLBACK,
-        ctypes.py_object,
+        py_object,
         ic.DEVICELOSTCALLBACK,
-        ctypes.py_object,
+        py_object,
     ]
 
-    ic.IC_Codec_Create.restype = ctypes.POINTER(HCODEC)
+    ic.IC_Codec_Create.restype = POINTER(HCODEC)
 
-    ic.ENUMCODECCB = ctypes.CFUNCTYPE(
-        ctypes.c_void_p, ctypes.c_char_p, ctypes.py_object
-    )
-    ic.IC_enumCodecs.argtypes = (ic.ENUMCODECCB, ctypes.py_object)
+    ic.ENUMCODECCB = CFUNCTYPE(c_void_p, c_char_p, py_object)
+    ic.IC_enumCodecs.argtypes = (ic.ENUMCODECCB, py_object)
 
-    ic.IC_GetDeviceName.restype = ctypes.c_char_p
-    ic.IC_GetDevice.restype = ctypes.c_char_p
-    ic.IC_GetUniqueNamefromList.restype = ctypes.c_char_p
+    ic.IC_GetDeviceName.restype = c_char_p
+    ic.IC_GetDevice.restype = c_char_p
+    ic.IC_GetUniqueNamefromList.restype = c_char_p
 
-    ic.IC_CreateFrameFilter.argtypes = (ctypes.c_char_p, ctypes.POINTER(HFRAMEFILTER))
+    ic.IC_CreateFrameFilter.argtypes = (c_char_p, POINTER(HFRAMEFILTER))
 
 
 def T(instr):
