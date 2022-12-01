@@ -567,7 +567,7 @@ def load_library(lib_path=None):
                 (
                     "TISGRABBER environment variable not set. Download and install IC "
                     "Imaging Control C Library from "
-                    "https://www.theimagingsource.com/support/downloads-for-windows/software-development-kits-sdks/tisgrabberdll/" # noqa: E501
+                    "https://www.theimagingsource.com/support/downloads-for-windows/software-development-kits-sdks/tisgrabberdll/"  # noqa: E501
                 )
             )
         lib_path = Path(lib_path).parent
