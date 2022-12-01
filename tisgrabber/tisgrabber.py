@@ -1,3 +1,5 @@
+import os
+import platform
 from ctypes import (
     CFUNCTYPE,
     POINTER,
@@ -10,9 +12,11 @@ from ctypes import (
     c_ubyte,
     c_ulong,
     c_void_p,
+    cdll,
     py_object,
 )
 from enum import Enum
+from pathlib import Path
 
 
 class SinkFormats(Enum):
@@ -401,12 +405,6 @@ def declare_functions(ic):
     ic.IC_ResetUSBCam.restype = c_int
     ic.IC_ResetUSBCam.argtypes = (POINTER(HGRABBER),)
 
-    ic.IC_QueryPropertySet.restype = c_int
-    ic.IC_QueryPropertySet.argtypes = (POINTER(HGRABBER), c_int)
-
-    ic.IC_QueryPropertySet.restype = c_int
-    ic.IC_QueryPropertySet.argtypes = POINTER(HGRABBER)
-
     # TODO
     # ic.IC_PropertySet_Set.restype = c_int
     # ic.IC_PropertySet_Set.argtypes = (POINTER(HGRABBER),  ?, ?)
@@ -465,14 +463,6 @@ def declare_functions(ic):
         c_float,
     )
 
-    ic.IC_IsPropertyAutoAvailable.restype = c_int
-    ic.IC_GetPropertySwitch.argtypes = (
-        POINTER(HGRABBER),
-        c_char_p,
-        c_char_p,
-        POINTER(c_long),
-    )
-
     ic.IC_SetPropertySwitch.restype = c_int
     ic.IC_SetPropertySwitch.argtypes = (POINTER(HGRABBER), c_char_p, c_char_p, c_int)
 
@@ -503,7 +493,7 @@ def declare_functions(ic):
         c_int,
     )
 
-    ic.IC_SetFrameFilter.restype = c_int
+    ic.IC_CreateFrameFilter.restype = c_int
     ic.IC_CreateFrameFilter.argtypes = (c_char_p, POINTER(HFRAMEFILTER))
 
     ic.IC_DeleteFrameFilter.restype = None
@@ -546,7 +536,7 @@ def declare_functions(ic):
     ic.IC_enumCodecs.argtypes = (ic.ENUMCODECCB, py_object)
 
     ic.IC_Codec_Create.restype = POINTER(HCODEC)
-    ic.IC_Codec_Create.argtypes = c_char_p
+    ic.IC_Codec_Create.argtypes = (c_char_p,)
 
     ic.IC_Codec_Release.restype = None
     ic.IC_Codec_Release.argtypes = (POINTER(HCODEC),)
@@ -567,3 +557,24 @@ def declare_functions(ic):
     ic.IC_SetAVIFileName.argtypes = (POINTER(HGRABBER), c_char_p)
     ic.IC_enableAVICapturePause.restype = c_int
     ic.IC_enableAVICapturePause.argtypes = (POINTER(HGRABBER), c_int)
+
+
+def load_library(lib_path=None):
+    if lib_path is None:
+        lib_path = os.environ.get("TISGRABBER")
+        if lib_path is None:
+            raise ValueError(
+                (
+                    "TISGRABBER environment variable not set. Download and install IC "
+                    "Imaging Control C Library from "
+                    "https://www.theimagingsource.com/support/downloads-for-windows/software-development-kits-sdks/tisgrabberdll/" # noqa: E501
+                )
+            )
+        lib_path = Path(lib_path).parent
+        if platform.machine().endswith("64"):
+            lib_path = lib_path / "bin" / "x64" / "tisgrabber_x64.dll"
+        else:
+            lib_path = lib_path / "bin" / "win32" / "tisgrabber.dll"
+    ic = cdll.LoadLibrary(str(lib_path))
+    declare_functions(ic)
+    return ic
