@@ -92,7 +92,7 @@ class HFRAMEFILTER(Structure):
     ]
 
 
-def declareFunctions(ic):
+def declare_functions(ic):
     """
     Functions returning a HGRABBER Handle must set their restype to POINTER(HGRABBER)
 
@@ -567,46 +567,3 @@ def declareFunctions(ic):
     ic.IC_SetAVIFileName.argtypes = (POINTER(HGRABBER), c_char_p)
     ic.IC_enableAVICapturePause.restype = c_int
     ic.IC_enableAVICapturePause.argtypes = (POINTER(HGRABBER), c_int)
-
-
-def T(instr):
-    """
-    Helper function
-    Encodes the input string to utf-8
-
-    :param instr: Python string to be converted
-    :return: converted string
-    """
-    return instr.encode("utf-8")
-
-
-def D(instr):
-    """
-    Helper function
-    Decodes instr utf-8
-
-    :param instr: Python string to be converted
-    :return: converted string
-    """
-    return instr.decode("utf-8", "ignore")
-
-
-def openDevice(ic):
-    """
-    Helper functions
-    Open a camera. If a file with a device state exists, it will be used. If not, the
-    device selection dialog is shown and if a valid devices was selected, the device
-    state file is created.
-
-    :return: a HGRABBER
-    """
-    try:
-        hGrabber = ic.IC_LoadDeviceStateFromFile(None, T("device.xml"))
-        if not ic.IC_IsDevValid(hGrabber):
-            hGrabber = ic.IC_ShowDeviceSelectionDialog(None)
-    except Exception:
-        hGrabber = ic.IC_ShowDeviceSelectionDialog(None)
-
-    if ic.IC_IsDevValid(hGrabber):
-        ic.IC_SaveDeviceStateToFile(hGrabber, T("device.xml"))
-    return hGrabber
