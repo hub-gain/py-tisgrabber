@@ -73,7 +73,7 @@ class ImageControl:
     def close_video_capture_device(self, grabber: hGrabber) -> None:
         self._ic.IC_CloseVideoCaptureDevice(grabber)
 
-    def set_video_format(self, grabber, format: str) -> None:
+    def set_video_format(self, grabber: hGrabber, format: str) -> None:
         err = self._ic.IC_SetVideoFormat(grabber, format.encode("utf-8"))
         if err == IC_ERROR:
             raise ICError("Failed to set video format {format}")
@@ -91,12 +91,14 @@ class ImageControl:
         if err == IC_NOT_IN_LIVEMODE:
             raise NotInLivemodeError("Setting frame rate is not possible in live mode")
 
-    def save_device_state_to_file(self, grabber, file_path: FilePath) -> None:
+    def save_device_state_to_file(self, grabber: hGrabber, file_path: FilePath) -> None:
         err = self._ic.IC_SaveDeviceStateToFile(grabber, str(file_path).encode("utf-8"))
         if err == IC_ERROR:
             raise ICError("Failed to save device state to file")
 
-    def load_device_state_from_file(self, grabber, file_path: FilePath) -> hGrabber:
+    def load_device_state_from_file(
+        self, grabber: hGrabber, file_path: FilePath
+    ) -> hGrabber:
         return self._ic.IC_LoadDeviceStateFromFile(
             grabber, str(file_path).encode("utf-8")
         )
