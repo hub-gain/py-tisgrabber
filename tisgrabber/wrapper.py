@@ -114,10 +114,12 @@ class ImageControl:
         if err == IC_NO_DEVICE:
             raise NoDeviceError("No video capture device is opened")
         if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
+            raise PropertyItemNotAvailableError(
+                f"Requested item {property} is not available."
+            )
         if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
             raise PropertyElementNotAvailableError(
-                "Requested element is not available."
+                f"Requested element {element} is not available."
             )
         if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
             raise PropertyElementWrongInterfaceError(
@@ -126,13 +128,13 @@ class ImageControl:
 
     def get_property_switch(
         self, grabber: hGrabber, property: str, element: str
-    ) -> int:
+    ) -> bool:
         on = ctypes.c_int()
-        err = self._ic.IC_SetPropertySwitch(
+        err = self._ic.IC_GetPropertySwitch(
             grabber, property.encode("utf-8"), element.encode("utf-8"), on
         )
         if err == IC_SUCCESS:
-            return on.value
+            return bool(on.value)
         if err == IC_NO_HANDLE:
             raise NoHandleError("Invalid grabber handle")
         if err == IC_NO_DEVICE:

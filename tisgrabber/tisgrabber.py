@@ -463,6 +463,14 @@ def declare_functions(ic):
         c_float,
     )
 
+    ic.IC_GetPropertySwitch.restype = c_int
+    ic.IC_GetPropertySwitch.argtypes = (
+        POINTER(HGRABBER),
+        c_char_p,
+        c_char_p,
+        POINTER(c_int),
+    )
+
     ic.IC_SetPropertySwitch.restype = c_int
     ic.IC_SetPropertySwitch.argtypes = (POINTER(HGRABBER), c_char_p, c_char_p, c_int)
 
