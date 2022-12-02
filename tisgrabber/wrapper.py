@@ -25,14 +25,14 @@ from .tisgrabber import (
     load_library,
 )
 
-hGrabber = NewType("hGrabber")
-FilePath = Union(str, Path)
+hGrabber = NewType("hGrabber", int)
+FilePath = Union[str, Path]
 
 
 class ImageControl:
     def __init__(self, lib_path=None):
         self._ic = load_library(lib_path)
-        err = self._ic.InitLibrary(0)
+        err = self._ic.IC_InitLibrary()
         if err == IC_ERROR:
             raise ICError("Failed to initialize ImageControl library")
 
@@ -40,7 +40,7 @@ class ImageControl:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._ic.CloseLibrary()
+        self._ic.IC_CloseLibrary()
 
     def create_grabber(self) -> hGrabber:
         return self._ic.IC_CreateGrabber()
@@ -54,7 +54,7 @@ class ImageControl:
         return self._ic.IC_ShowDeviceSelectionDialog(grabber)
 
     def is_device_valid(self, grabber: hGrabber) -> bool:
-        return bool(self._ic.IC_IsValidDevice(grabber))
+        return bool(self._ic.IC_IsDevValid(grabber))
 
     def start_live(self, grabber: hGrabber) -> None:
         return self._ic.IC_StartLive(grabber, 1)
