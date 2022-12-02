@@ -103,19 +103,16 @@ class ImageControl:
             grabber, str(file_path).encode("utf-8")
         )
 
-    def set_property_switch(
-        self, grabber: hGrabber, property: str, element: str, on: bool
-    ) -> None:
-        err = self._ic.IC_SetPropertySwitch(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), int(on)
-        )
+    def _check_property_error_code(self, err: int, item: str, element: str) -> None:
+        if err == IC_SUCCESS:
+            return
         if err == IC_NO_HANDLE:
             raise NoHandleError("Invalid grabber handle")
         if err == IC_NO_DEVICE:
             raise NoDeviceError("No video capture device is opened")
         if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
             raise PropertyItemNotAvailableError(
-                f"Requested item {property} is not available."
+                f"Requested item {item} is not available."
             )
         if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
             raise PropertyElementNotAvailableError(
@@ -123,129 +120,74 @@ class ImageControl:
             )
         if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
             raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
+                f"Requested element {element} does not have the needed interface."
             )
 
-    def get_property_switch(
-        self, grabber: hGrabber, property: str, element: str
-    ) -> bool:
+    def set_property_switch(
+        self, grabber: hGrabber, item: str, element: str, on: bool
+    ) -> None:
+        err = self._ic.IC_SetPropertySwitch(
+            grabber, item.encode("utf-8"), element.encode("utf-8"), int(on)
+        )
+        self._check_property_error_code(err, item, element)
+
+    def get_property_switch(self, grabber: hGrabber, item: str, element: str) -> bool:
         on = ctypes.c_int()
         err = self._ic.IC_GetPropertySwitch(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), on
+            grabber, item.encode("utf-8"), element.encode("utf-8"), on
         )
-        if err == IC_SUCCESS:
-            return bool(on.value)
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
-            )
+        self._check_property_error_code(err, item, element)
+        return bool(on.value)
 
     def set_property_absolute_value(
-        self, grabber: hGrabber, property: str, element: str, value: float
+        self, grabber: hGrabber, item: str, element: str, value: float
     ) -> None:
         err = self._ic.IC_SetPropertyAbsoluteValue(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), value
+            grabber, item.encode("utf-8"), element.encode("utf-8"), value
         )
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
-            )
+        self._check_property_error_code(err, item, element)
 
     def get_property_absolute_value(
-        self, grabber: hGrabber, property: str, element: str
+        self, grabber: hGrabber, item: str, element: str
     ) -> float:
         value = ctypes.c_float()
         err = self._ic.IC_GetPropertyAbsoluteValue(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), value
+            grabber, item.encode("utf-8"), element.encode("utf-8"), value
         )
-        if err == IC_SUCCESS:
-            return value.value
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
-            )
+        self._check_property_error_code(err, item, element)
+        return value.value
+
+    def get_property_value(self, grabber: hGrabber, item: str, element: str) -> int:
+        value = ctypes.c_long()
+        err = self._ic.IC_GetPropertyValue(
+            grabber, item.encode("utf-8"), element.encode("utf-8"), value
+        )
+        self._check_property_error_code(err, item, element)
+        return value.value
 
     def get_property_absolute_value_range(
-        self, grabber: hGrabber, property: str, element: str
+        self, grabber: hGrabber, item: str, element: str
     ) -> tuple[float, float]:
         min_, max_ = ctypes.c_float(), ctypes.c_float()
         err = self._ic.IC_GetPropertyAbsoluteValueRange(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), min_, max_
+            grabber, item.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        if err == IC_SUCCESS:
-            return (min_.value, max_.value)
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
-            )
+        self._check_property_error_code(err, item, element)
+        return (min_.value, max_.value)
 
     def get_property_value_range(
-        self, grabber: hGrabber, property: str, element: str
+        self, grabber: hGrabber, item: str, element: str
     ) -> tuple[int, int]:
         min_, max_ = ctypes.c_long(), ctypes.c_long()
         err = self._ic.IC_GetPropertyValueRange(
-            grabber, property.encode("utf-8"), element.encode("utf-8"), min_, max_
+            grabber, item.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        if err == IC_SUCCESS:
-            return (min_.value, max_.value)
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                "Requested element does not have the interface that is needed."
-            )
+        self._check_property_error_code(err, item, element)
+        return (min_.value, max_.value)
 
-    def property_one_push(self, grabber: hGrabber, property: str) -> None:
+    def property_one_push(self, grabber: hGrabber, item: str) -> None:
         err = self._ic.IC_PropertyOnePush(
-            grabber, property.encode("utf-8"), "One Push".encode("utf-8")
+            grabber, item.encode("utf-8"), "One Push".encode("utf-8")
         )
         if err == IC_NO_HANDLE:
             raise NoHandleError("Invalid grabber handle")
