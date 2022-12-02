@@ -195,10 +195,34 @@ class ImageControl:
                 "Requested element does not have the interface that is needed."
             )
 
-    def get_property_value_range(
+    def get_property_absolute_value_range(
         self, grabber: hGrabber, property: str, element: str
     ) -> tuple[float, float]:
         min_, max_ = ctypes.c_float(), ctypes.c_float()
+        err = self._ic.IC_GetPropertyAbsoluteValueRange(
+            grabber, property.encode("utf-8"), element.encode("utf-8"), min_, max_
+        )
+        if err == IC_SUCCESS:
+            return (min_.value, max_.value)
+        if err == IC_NO_HANDLE:
+            raise NoHandleError("Invalid grabber handle")
+        if err == IC_NO_DEVICE:
+            raise NoDeviceError("No video capture device is opened")
+        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
+            raise PropertyItemNotAvailableError("Requested item is not available.")
+        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
+            raise PropertyElementNotAvailableError(
+                "Requested element is not available."
+            )
+        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
+            raise PropertyElementWrongInterfaceError(
+                "Requested element does not have the interface that is needed."
+            )
+
+    def get_property_value_range(
+        self, grabber: hGrabber, property: str, element: str
+    ) -> tuple[int, int]:
+        min_, max_ = ctypes.c_long(), ctypes.c_long()
         err = self._ic.IC_GetPropertyValueRange(
             grabber, property.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
