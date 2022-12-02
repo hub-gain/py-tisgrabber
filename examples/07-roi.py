@@ -8,8 +8,8 @@ ic = ImageControl()
 
 grabber = ic.show_device_selection_dialog()
 
-try:
-    if ic.is_device_valid(grabber):
+if ic.is_device_valid(grabber):
+    try:
         # Set "big" video format
         ic.set_video_format(grabber, "Y800 (744x480)")
         ic.set_frame_rate(grabber, 30.0e-3)
@@ -47,8 +47,7 @@ try:
         ic.msg_box("Click OK to stop", "ROI Demo")
         ic.stop_live(grabber)
 
-    else:
-        ic.msg_box("No device opened", "ROI Demo")
-
-finally:
-    ic.release_grabber(grabber)
+    finally:
+        ic.release_grabber(grabber)
+else:
+    ic.msg_box("No device opened", "ROI Demo")
