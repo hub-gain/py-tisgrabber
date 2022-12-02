@@ -16,7 +16,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = ["numpy"]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -29,6 +29,7 @@ dev = [
   "Flake8-pyproject>=1.1.0.post0",
   "setuptools_scm>=6.2",
 ]
+examples = ["matplotlib"]
 
 [tool.setuptools_scm]
 

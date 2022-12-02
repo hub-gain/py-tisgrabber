@@ -2,6 +2,8 @@ import ctypes
 from pathlib import Path
 from typing import NewType, Optional, Union
 
+import numpy as np
+
 from .exceptions import (
     ICError,
     NoDeviceError,
@@ -240,3 +242,40 @@ class ImageControl:
             raise ICError(
                 f"An error occurred while saving the image. Error code {err}."
             )
+
+    def get_image_description(self, grabber: hGrabber) -> tuple[int, int, int, int]:
+        width = ctypes.c_long()
+        height = ctypes.c_long()
+        bits_per_pixel = ctypes.c_int()
+        color_format = ctypes.c_int()
+
+        err = self._ic.IC_GetImageDescription(
+            grabber, width, height, bits_per_pixel, color_format
+        )
+        if err == IC_SUCCESS:
+            return (width.value, height.value, bits_per_pixel.value, color_format.value)
+        else:
+            raise ICError(
+                f"An error occurred while getting image description. Error code {err}."
+            )
+
+    # TODO: Add return type
+    def _get_image_ptr(self, grabber: hGrabber):
+        return self._ic.IC_GetImagePtr(grabber)
+
+    def get_image_data(self, grabber: hGrabber) -> np.ndarray:
+        width, height, bits_per_pixel, _ = self.get_image_description(grabber)
+        buffer_size = width * height * bits_per_pixel
+
+        image_ptr = self._get_image_ptr(grabber)
+        image_data = ctypes.cast(
+            image_ptr, ctypes.POINTER(ctypes.c_ubyte * buffer_size)
+        )
+
+        image = np.ndarray(
+            buffer=image_data.contents,
+            dtype=np.uint8,
+            shape=(height, width, bits_per_pixel // 8),
+        )
+
+        return image
