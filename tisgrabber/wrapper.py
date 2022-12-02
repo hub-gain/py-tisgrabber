@@ -279,3 +279,13 @@ class ImageControl:
         )
 
         return image
+
+    def get_available_codecs(self) -> list[str]:
+        def enum_codec_callback(name, lst):
+            lst.append(name.decode("utf-8"))
+            return 0
+
+        enum_codec_callback_func = self._ic.ENUMCODECCB(enum_codec_callback)
+        codecs = []
+        self._ic.IC_enumCodecs(enum_codec_callback_func, codecs)
+        return codecs
