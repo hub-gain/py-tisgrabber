@@ -35,7 +35,10 @@ class FRAMEFILTER_PARAM_TYPE(Enum):
     eParamData = 4
 
 
-ImageFileTypes = {"BMP": 0, "JPEG": 1}
+class ImageFileTypes(Enum):
+    BMP = 0
+    JPEG = 1
+
 
 IC_SUCCESS = 1
 IC_ERROR = 0

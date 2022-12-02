@@ -22,6 +22,7 @@ from .tisgrabber import (
     IC_PROPERTY_ELEMENT_WRONG_INTERFACE,
     IC_PROPERTY_ITEM_NOT_AVAILABLE,
     IC_SUCCESS,
+    ImageFileTypes,
     load_library,
 )
 
@@ -217,3 +218,25 @@ class ImageControl:
 
     def open_device_by_unique_name(self, grabber: hGrabber, unique_name: str) -> None:
         self._ic.IC_OpenDevByUniqueName(grabber, unique_name.encode("utf-8"))
+
+    def snap_image(self, grabber: hGrabber, timeout: int = 1000) -> None:
+        err = self._ic.IC_SnapImage(grabber, timeout)
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"An error occurred while snapping the image. Error code {err}."
+            )
+
+    def save_image(
+        self,
+        grabber: hGrabber,
+        filename: FilePath,
+        format: ImageFileTypes = ImageFileTypes.JPEG,
+        quality: int = 100,
+    ) -> None:
+        err = self._ic.IC_SaveImage(
+            grabber, str(filename).encode("utf-8"), format.value, quality
+        )
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"An error occurred while saving the image. Error code {err}."
+            )
