@@ -29,6 +29,7 @@ from .tisgrabber import (
 )
 
 hGrabber = NewType("hGrabber", int)
+hCodec = NewType("hCodec", int)
 FilePath = Union[str, Path]
 
 
@@ -289,3 +290,21 @@ class ImageControl:
         codecs = []
         self._ic.IC_enumCodecs(enum_codec_callback_func, codecs)
         return codecs
+
+    def codec_create(self, codec_name: str) -> hCodec:
+        return self._ic.IC_Codec_Create(codec_name.encode("utf-8"))
+
+    def codec_has_dialog(self, codec: hCodec) -> bool:
+        return bool(self._ic.IC_Codec_hasDialog(codec))
+
+    def codec_show_dialog(self, codec) -> None:
+        self._ic.IC_Codec_showDialog(codec)
+
+    def set_codec(self, grabber: hGrabber, codec: hCodec) -> None:
+        self._ic.IC_SetCodec(grabber, codec)
+
+    def set_avi_file_name(self, grabber: hGrabber, filename: FilePath) -> None:
+        self._ic.IC_SetAVIFileName(grabber, str(filename).encode("utf-8"))
+
+    def enable_avi_capture_pause(self, grabber: hGrabber, enable: bool) -> None:
+        self._ic.IC_enableAVICapturePause(grabber, int(enable))
