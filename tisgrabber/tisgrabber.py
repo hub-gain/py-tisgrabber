@@ -103,13 +103,13 @@ def declare_functions(ic):
     :param ic: The loaded tisgrabber*.dll
     """
     ic.IC_InitLibrary.restype = c_int
-    ic.IC_InitLibrary.argtypes = (c_char_p,)
+    ic.IC_InitLibrary.argtypes = None
 
     ic.IC_CreateGrabber.restype = POINTER(HGRABBER)
     ic.IC_CreateGrabber.argtypes = None
 
     ic.IC_ReleaseGrabber.restype = None
-    ic.IC_ReleaseGrabber.argtypes = (POINTER(HGRABBER),)
+    ic.IC_ReleaseGrabber.argtypes = (POINTER(POINTER(HGRABBER)),)
 
     ic.IC_CloseLibrary.restype = None
     ic.IC_CloseLibrary.argtypes = None
