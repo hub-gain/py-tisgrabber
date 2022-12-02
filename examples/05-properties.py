@@ -22,9 +22,21 @@ if ic.is_device_valid(grabber):
     print(f"Exposure is {1e3 * value} ms.")
 
     # Query possible exposure values
-    min_, max_ = ic.get_property_absolute_value_range(grabber, "Exposure", "Value")
-    print(f"Exposure can be set between {1e3 * min_} and {1e3 * max_} ms.")
+    min_exposure, max_exposure = ic.get_property_absolute_value_range(
+        grabber, "Exposure", "Value"
+    )
+    print(
+        f"Exposure can be set between {1e3 * min_exposure} and {1e3 * max_exposure} ms."
+    )
+
+    # Query possible gain setting values
+    min_gain, max_gain = ic.get_property_value_range(grabber, "Gain", "Value")
+    gain = ic.get_property_value(grabber, "Gain", "Value")
+    print(f"Gain is {gain} and can be set between {min_gain} and {max_gain}.")
+
+    # Perform the one push  for Focus
+    ic.property_one_push(grabber, "Focus")
 
 else:
-    ic.msg_box("No device opened", "Setting and getting properties")
+    ic.msg_box("No device opened.", "Setting and getting properties")
 ic.release_grabber(grabber)
