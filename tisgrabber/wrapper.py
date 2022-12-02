@@ -210,10 +210,10 @@ class ImageControl:
         return device
 
     def get_unique_name_from_list(self, index: int) -> str:
-        unique_name = self._ic.IC_GetUniqueNameFromList(index)
+        unique_name = self._ic.IC_GetUniqueNamefromList(index)
         if unique_name:
             unique_name = unique_name.decode("utf-8")
         return unique_name
 
     def open_device_by_unique_name(self, grabber: hGrabber, unique_name: str) -> None:
-        self._ic.IC_OpenDeviceByUniqueName(grabber, unique_name.encode("utf-8"))
+        self._ic.IC_OpenDevByUniqueName(grabber, unique_name.encode("utf-8"))
