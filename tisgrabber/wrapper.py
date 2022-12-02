@@ -76,7 +76,7 @@ class ImageControl:
     def set_video_format(self, grabber: hGrabber, format: str) -> None:
         err = self._ic.IC_SetVideoFormat(grabber, format.encode("utf-8"))
         if err == IC_ERROR:
-            raise ICError("Failed to set video format {format}")
+            raise ICError(f"Failed to set video format to '{format}'")
 
     def set_frame_rate(self, grabber: hGrabber, frame_rate: float) -> None:
         err = self._ic.IC_SetFrameRate(grabber, frame_rate)
