@@ -498,6 +498,9 @@ def declare_functions(ic):
     #   c_char_p
     # )
 
+    ic.IC_GetAvailableFrameFilterCount.restype = c_int
+    ic.IC_GetAvailableFrameFilterCount.argtypes = None
+
     ic.IC_GetAvailableFrameFilters.restype = c_int
     ic.IC_GetAvailableFrameFilters.argtypes = (
         POINTER(POINTER((c_char * 80) * 40)),
@@ -506,6 +509,9 @@ def declare_functions(ic):
 
     ic.IC_CreateFrameFilter.restype = c_int
     ic.IC_CreateFrameFilter.argtypes = (c_char_p, POINTER(HFRAMEFILTER))
+
+    ic.IC_AddFrameFilterToDevice.restype = c_int
+    ic.IC_AddFrameFilterToDevice.argtypes = (POINTER(HGRABBER), POINTER(HFRAMEFILTER))
 
     ic.IC_DeleteFrameFilter.restype = None
     ic.IC_DeleteFrameFilter.argtypes = (POINTER(HFRAMEFILTER),)

@@ -5,7 +5,7 @@ ic = ImageControl()
 grabber = ic.show_device_selection_dialog()
 
 try:
-    if ic.is_device_valid(grabber):
+    if ic.is_dev_valid(grabber):
         codec = ic.codec_create("MJPEG Compressor")
         if ic.codec_has_dialog(codec):
             ic.codec_show_dialog(codec)

@@ -7,7 +7,7 @@ ic = ImageControl()
 grabber = ic.show_device_selection_dialog()
 try:
 
-    if ic.is_device_valid(grabber):
+    if ic.is_dev_valid(grabber):
         ic.start_live(grabber)
         key = ""
         while key != "q":

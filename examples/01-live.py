@@ -4,7 +4,7 @@ ic = ImageControl()
 
 grabber = ic.show_device_selection_dialog()
 
-if ic.is_device_valid(grabber):
+if ic.is_dev_valid(grabber):
     ic.start_live(grabber)
     ic.msg_box("Click OK to stop", "Simple Live Video")
     ic.stop_live(grabber)

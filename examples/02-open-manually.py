@@ -5,7 +5,7 @@ ic = ImageControl()
 grabber = ic.create_grabber()
 ic.open_video_capture_device(grabber, "DMM 22BUC03-ML")
 
-if ic.is_device_valid(grabber):
+if ic.is_dev_valid(grabber):
     ic.set_video_format(grabber, "Y800 (744x480)")
     ic.set_frame_rate(grabber, 30.0)
     ic.start_live(grabber)

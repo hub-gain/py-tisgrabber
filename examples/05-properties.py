@@ -5,7 +5,7 @@ grabber = ic.show_device_selection_dialog()
 
 state = {True: "on", False: "off"}
 
-if ic.is_device_valid(grabber):
+if ic.is_dev_valid(grabber):
     # Turn auto exposure on
     ic.set_property_switch(grabber, "Exposure", "Auto", True)
     on = ic.get_property_switch(grabber, "Exposure", "Auto")

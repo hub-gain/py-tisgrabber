@@ -8,7 +8,7 @@ ic = ImageControl()
 
 grabber = ic.show_device_selection_dialog()
 
-if ic.is_device_valid(grabber):
+if ic.is_dev_valid(grabber):
     try:
         # Set "big" video format
         ic.set_video_format(grabber, "Y800 (744x480)")
