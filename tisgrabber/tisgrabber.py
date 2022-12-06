@@ -15,48 +15,7 @@ from ctypes import (
     cdll,
     py_object,
 )
-from enum import Enum
 from pathlib import Path
-
-
-class SinkFormats(Enum):
-    Y800 = 0
-    RGB24 = 1
-    RGB32 = 2
-    UYVY = 3
-    Y16 = 4
-
-
-class FRAMEFILTER_PARAM_TYPE(Enum):
-    eParamLong = 0
-    eParamBoolean = 1
-    eParamFloat = 2
-    eParamString = 3
-    eParamData = 4
-
-
-class ImageFileTypes(Enum):
-    BMP = 0
-    JPEG = 1
-
-
-IC_SUCCESS = 1
-IC_ERROR = 0
-IC_NO_HANDLE = -1
-IC_NO_DEVICE = -2
-IC_NOT_AVAILABLE = -3
-IC_NO_PROPERTYSET = -3
-IC_DEFAULT_WINDOW_SIZE_SET = -3
-IC_NOT_IN_LIVEMODE = -3
-IC_PROPERTY_ITEM_NOT_AVAILABLE = -4
-IC_PROPERTY_ELEMENT_NOT_AVAILABLE = -5
-IC_PROPERTY_ELEMENT_WRONG_INTERFACE = -6
-IC_INDEX_OUT_OF_RANGE = -7
-IC_WRONG_XML_FORMAT = -1
-IC_WRONG_INCOMPATIBLE_XML = -3
-IC_NOT_ALL_PROPERTIES_RESTORED = -4
-IC_DEVICE_NOT_FOUND = -5
-IC_FILE_NOT_FOUND = 35
 
 
 class HGRABBER(Structure):
@@ -174,13 +133,13 @@ def declare_functions(ic):
     )
 
     ic.IC_GetCameraProperty.restype = c_int
-    ic.IC_GetCameraProperty.argtypes = (POINTER(HGRABBER), c_int, c_int)
+    ic.IC_GetCameraProperty.argtypes = (POINTER(HGRABBER), c_int, POINTER(c_long))
 
     ic.IC_EnableAutoCameraProperty.restype = c_int
     ic.IC_EnableAutoCameraProperty.argtypes = (POINTER(HGRABBER), c_int, c_int)
 
     ic.IC_IsCameraPropertyAutoAvailable.restype = c_int
-    ic.IC_IsCameraPropertyAutoAvailable.argtypes = (POINTER(HGRABBER), c_int, c_int)
+    ic.IC_IsCameraPropertyAutoAvailable.argtypes = (POINTER(HGRABBER), c_int)
 
     ic.IC_GetAutoCameraProperty.restype = c_int
     ic.IC_GetAutoCameraProperty.argtypes = (POINTER(HGRABBER), c_int, POINTER(c_int))

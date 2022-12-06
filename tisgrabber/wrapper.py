@@ -4,20 +4,8 @@ from typing import Callable, Optional, Union
 
 import numpy as np
 
+from .enums import CameraProperty
 from .exceptions import (
-    ICError,
-    NoDeviceError,
-    NoHandleError,
-    NotAvailableError,
-    NotInLivemodeError,
-    PropertyElementNotAvailableError,
-    PropertyElementWrongInterfaceError,
-    PropertyItemNotAvailableError,
-)
-from .tisgrabber import (
-    HCODEC,
-    HFRAMEFILTER,
-    HGRABBER,
     IC_ERROR,
     IC_NO_DEVICE,
     IC_NO_HANDLE,
@@ -27,9 +15,16 @@ from .tisgrabber import (
     IC_PROPERTY_ELEMENT_WRONG_INTERFACE,
     IC_PROPERTY_ITEM_NOT_AVAILABLE,
     IC_SUCCESS,
-    ImageFileTypes,
-    load_library,
+    ICError,
+    NoDeviceError,
+    NoHandleError,
+    NotAvailableError,
+    NotInLivemodeError,
+    PropertyElementNotAvailableError,
+    PropertyElementWrongInterfaceError,
+    PropertyItemNotAvailableError,
 )
+from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, ImageFileTypes, load_library
 
 FilePath = Union[str, Path]
 FrameReadyCallbackFunction = Callable[
@@ -99,11 +94,80 @@ class ImageControl:
     def stop_live(self, grabber: HGRABBER) -> None:
         return self._ic.IC_StopLive(grabber)
 
-    # def is_camera_property_available()
+    def is_camera_property_available(self, grabber, property: CameraProperty) -> bool:
+        return bool(self._ic.IC_IsCameraPropertyAvailable(grabber, property))
 
-    # def set_camera_property()
+    def set_camera_property(
+        self, grabber: HGRABBER, property: CameraProperty, value: int
+    ) -> None:
+        err = self._ic.IC_SetCameraProperty(grabber, property, value)
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"An error occurred while setting camera property. Error code {err}."
+            )
 
-    # def camera_property_get_range()
+    def camera_property_get_range(
+        self, grabber: HGRABBER, property: CameraProperty
+    ) -> tuple[int, int]:
+        min_ = ctypes.c_long()
+        max_ = ctypes.c_long()
+        err = self._ic.IC_CameraPropertyGetRange(
+            grabber,
+            property,
+            ctypes.byref(min_),
+            ctypes.byref(max_),
+        )
+        if err == IC_SUCCESS:
+            return (
+                min_.value,
+                max_.value,
+            )
+        else:
+            raise ICError(
+                (
+                    "An error occurred while getting camera property range."
+                    f"Error code {err}."
+                )
+            )
+
+    def get_camera_property(self, grabber: HGRABBER, property: CameraProperty) -> int:
+        value = ctypes.c_long()
+        err = self._ic.IC_GetCameraProperty(grabber, property, ctypes.byref(value))
+        if err == IC_SUCCESS:
+            return value.value
+        else:
+            raise ICError(
+                f"An error occurred while getting camera property. Error code {err}."
+            )
+
+    def enable_auto_camera_property(
+        self, grabber: HGRABBER, property: CameraProperty, enable: bool
+    ) -> None:
+        err = self._ic.IC_EnableAutoCameraProperty(grabber, property, int(enable))
+        if err != IC_SUCCESS:
+            raise ICError(
+                (
+                    "An error occurred while enabling auto camera property."
+                    f"Error code {err}."
+                )
+            )
+
+    def is_camera_property_auto_available(
+        self, grabber: HGRABBER, property: CameraProperty
+    ) -> bool:
+        return bool(self._ic.IC_IsCameraPropertyAutoAvailable(grabber, property))
+
+    def get_auto_camera_property(
+        self, grabber: HGRABBER, property: CameraProperty
+    ) -> bool:
+        value = ctypes.c_int()
+        err = self._ic.IC_GetAutoCameraProperty(grabber, property, ctypes.byref(value))
+        if err == IC_SUCCESS:
+            return bool(value.value)
+        else:
+            raise ICError(
+                f"An error occurred while getting auto camera value. Error code {err}."
+            )
 
     # def is_video_property_auto_available()
 
@@ -317,7 +381,8 @@ class ImageControl:
         if err == IC_NOT_IN_LIVEMODE:
             raise NotInLivemodeError("Setting frame rate is not possible in live mode")
 
-    # def get_frame_rate()
+    def get_frame_rate(self, grabber: HGRABBER) -> float:
+        return self._ic.IC_GetFrameRate(grabber)
 
     # def focus_one_push()
 
@@ -349,7 +414,7 @@ class ImageControl:
                 f"Requested element {element} does not have the needed interface."
             )
 
-    # is_property_available()
+    # def is_property_available()
 
     def get_property_value_range(
         self, grabber: HGRABBER, item: str, element: str
@@ -369,7 +434,7 @@ class ImageControl:
         self._check_property_error_code(err, item, element)
         return value.value
 
-    # def set_property_value()
+    # def set_property_value():
 
     def get_property_absolute_value_range(
         self, grabber: HGRABBER, item: str, element: str
