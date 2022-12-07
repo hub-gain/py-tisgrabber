@@ -35,11 +35,11 @@ if ic.is_dev_valid(grabber):
     ic.set_callbacks(
         grabber, frame_ready_callback, None, device_lost_callback, device_lost_data
     )
-    ic.start_live()
+    ic.start_live(grabber)
     while device_lost_data.connected:
         print("Disconnect the camera now.")
         sleep(1)
-    ic.IC_StopLive(grabber)
+    ic.stop_live(grabber)
 
 else:
     ic.msg_box("No device opened", "Device Lost Callback")

@@ -1,3 +1,6 @@
+# FIXME: Fails with
+# tisgrabber.exceptions.PropertyElementNotAvailableError: Requested element is not available.
+
 from ctypes import Structure, pointer
 
 from tisgrabber.wrapper import HGRABBER, ImageControl
@@ -6,7 +9,7 @@ from tisgrabber.wrapper import HGRABBER, ImageControl
 class CallbackUserData:
     """Example for user data passed to the callback function."""
 
-    def __init__(self, grabber: HGRABBER, n_frame: int, data: Structure):
+    def __init__(self):
         self.unused = ""
 
 
@@ -34,7 +37,7 @@ if ic.is_dev_valid(grabber):
     ic.start_live(grabber)
 
     ic.msg_box("Click OK to trigger", "Trigger Callback")
-    ic.property_one_push(grabber, "Trigger", "Software Trigger")
+    ic.property_one_push(grabber, "Software Trigger")
 
     ic.msg_box("Click OK to stop", "Trigger Callback")
     ic.stop_live(grabber)

@@ -1,3 +1,6 @@
+# FIXME: Fails with 
+# ctypes.ArgumentError: argument 1: <class 'TypeError'>: expected LP_LP_c_char_Array_80_Array_40 instance instead of c_char_p_Array_5
+
 from time import sleep
 
 from tisgrabber.wrapper import ImageControl
@@ -7,7 +10,7 @@ ic = ImageControl()
 filter_count = ic.get_available_frame_filter_count()
 print(f"{filter_count} frame filters are available.")
 
-filter_list = ic.get_available_frame_filter_list(filter_count)
+filter_list = ic.get_available_frame_filters(filter_count)
 print("Available frame filters:")
 for filter in filter_list:
     print(f"{filter}")

@@ -1,10 +1,10 @@
 import ctypes
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 
-from .enums import CameraProperty
+from .enums import CameraProperty, ImageFileType, VideoProperty
 from .exceptions import (
     IC_ERROR,
     IC_NO_DEVICE,
@@ -24,7 +24,7 @@ from .exceptions import (
     PropertyElementWrongInterfaceError,
     PropertyItemNotAvailableError,
 )
-from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, ImageFileTypes, load_library
+from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, load_library
 
 FilePath = Union[str, Path]
 FrameReadyCallbackFunction = Callable[
@@ -66,7 +66,6 @@ class ImageControl:
     def get_device_name(self, grabber: HGRABBER) -> str:
         return self._ic.IC_GetDeviceName(grabber).decode("utf-8")
 
-    # TODO: test this
     # def get_video_format_width()
 
     # def get_video_format_height()
@@ -95,12 +94,12 @@ class ImageControl:
         return self._ic.IC_StopLive(grabber)
 
     def is_camera_property_available(self, grabber, property: CameraProperty) -> bool:
-        return bool(self._ic.IC_IsCameraPropertyAvailable(grabber, property))
+        return bool(self._ic.IC_IsCameraPropertyAvailable(grabber, property.value))
 
     def set_camera_property(
         self, grabber: HGRABBER, property: CameraProperty, value: int
     ) -> None:
-        err = self._ic.IC_SetCameraProperty(grabber, property, value)
+        err = self._ic.IC_SetCameraProperty(grabber, property.value, value)
         if err != IC_SUCCESS:
             raise ICError(
                 f"An error occurred while setting camera property. Error code {err}."
@@ -113,7 +112,7 @@ class ImageControl:
         max_ = ctypes.c_long()
         err = self._ic.IC_CameraPropertyGetRange(
             grabber,
-            property,
+            property.value,
             ctypes.byref(min_),
             ctypes.byref(max_),
         )
@@ -132,7 +131,9 @@ class ImageControl:
 
     def get_camera_property(self, grabber: HGRABBER, property: CameraProperty) -> int:
         value = ctypes.c_long()
-        err = self._ic.IC_GetCameraProperty(grabber, property, ctypes.byref(value))
+        err = self._ic.IC_GetCameraProperty(
+            grabber, property.value, ctypes.byref(value)
+        )
         if err == IC_SUCCESS:
             return value.value
         else:
@@ -143,7 +144,7 @@ class ImageControl:
     def enable_auto_camera_property(
         self, grabber: HGRABBER, property: CameraProperty, enable: bool
     ) -> None:
-        err = self._ic.IC_EnableAutoCameraProperty(grabber, property, int(enable))
+        err = self._ic.IC_EnableAutoCameraProperty(grabber, property.value, int(enable))
         if err != IC_SUCCESS:
             raise ICError(
                 (
@@ -155,13 +156,20 @@ class ImageControl:
     def is_camera_property_auto_available(
         self, grabber: HGRABBER, property: CameraProperty
     ) -> bool:
-        return bool(self._ic.IC_IsCameraPropertyAutoAvailable(grabber, property))
+        # NOTE: explicit conversion to c_int is necessary here
+        return bool(
+            self._ic.IC_IsCameraPropertyAutoAvailable(
+                grabber, ctypes.c_int(property.value)
+            )
+        )
 
     def get_auto_camera_property(
         self, grabber: HGRABBER, property: CameraProperty
     ) -> bool:
         value = ctypes.c_int()
-        err = self._ic.IC_GetAutoCameraProperty(grabber, property, ctypes.byref(value))
+        err = self._ic.IC_GetAutoCameraProperty(
+            grabber, property.value, ctypes.byref(value)
+        )
         if err == IC_SUCCESS:
             return bool(value.value)
         else:
@@ -169,11 +177,86 @@ class ImageControl:
                 f"An error occurred while getting auto camera value. Error code {err}."
             )
 
-    # def is_video_property_auto_available()
+    def is_video_property_available(self, grabber, property: VideoProperty) -> bool:
+        return bool(self._ic.IC_IsVideoPropertyAvailable(grabber, property.value))
 
-    # def set_video_property()
+    def video_property_get_range(
+        self, grabber: HGRABBER, property: VideoProperty
+    ) -> tuple[int, int]:
+        min_ = ctypes.c_long()
+        max_ = ctypes.c_long()
+        err = self._ic.IC_VideoPropertyGetRange(
+            grabber,
+            property.value,
+            ctypes.byref(min_),
+            ctypes.byref(max_),
+        )
+        if err == IC_SUCCESS:
+            return (
+                min_.value,
+                max_.value,
+            )
+        else:
+            raise ICError(
+                (
+                    "An error occurred while getting video property range."
+                    f"Error code {err}."
+                )
+            )
 
-    # def enable_auto_video_property()
+    def get_video_property(self, grabber: HGRABBER, property: VideoProperty) -> int:
+        value = ctypes.c_long()
+        err = self._ic.IC_GetVideoProperty(grabber, property.value, ctypes.byref(value))
+        if err == IC_SUCCESS:
+            return value.value
+        else:
+            raise ICError(
+                f"An error occurred while getting video property. Error code {err}."
+            )
+
+    def is_video_property_auto_available(
+        self, grabber: HGRABBER, property: VideoProperty
+    ) -> bool:
+        return bool(
+            self._ic.IC_IsVideoPropertyAutoAvailable(
+                grabber, ctypes.c_int(property.value)
+            )
+        )
+
+    def get_auto_video_property(
+        self, grabber: HGRABBER, property: VideoProperty
+    ) -> bool:
+        value = ctypes.c_int()
+        err = self._ic.IC_GetAutoVideoProperty(
+            grabber, property.value, ctypes.byref(value)
+        )
+        if err == IC_SUCCESS:
+            return bool(value.value)
+        else:
+            raise ICError(
+                f"An error occurred while getting auto video value. Error code {err}."
+            )
+
+    def set_video_property(
+        self, grabber: HGRABBER, property: VideoProperty, value: int
+    ) -> None:
+        err = self._ic.IC_SetVideoProperty(grabber, property.value, value)
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"An error occurred while setting video property. Error code {err}."
+            )
+
+    def enable_auto_video_property(
+        self, grabber: HGRABBER, property: VideoProperty, enable: bool
+    ) -> None:
+        err = self._ic.IC_EnableAutoVideoProperty(grabber, property.value, int(enable))
+        if err != IC_SUCCESS:
+            raise ICError(
+                (
+                    "An error occurred while enabling auto video property."
+                    f"Error code {err}."
+                )
+            )
 
     def get_image_description(self, grabber: HGRABBER) -> tuple[int, int, int, int]:
         width = ctypes.c_long()
@@ -202,7 +285,7 @@ class ImageControl:
         self,
         grabber: HGRABBER,
         filename: FilePath,
-        format: ImageFileTypes = ImageFileTypes.JPEG,
+        format: ImageFileType = ImageFileType.JPEG,
         quality: int = 100,
     ) -> None:
         err = self._ic.IC_SaveImage(
@@ -213,7 +296,7 @@ class ImageControl:
                 f"An error occurred while saving the image. Error code {err}."
             )
 
-    def _get_image_ptr(self, grabber: HGRABBER) -> ctypes.pointer[ctypes.c_ubyte]:
+    def _get_image_ptr(self, grabber: HGRABBER):
         return self._ic.IC_GetImagePtr(grabber)
 
     def get_image_data(self, grabber: HGRABBER) -> np.ndarray:
@@ -312,7 +395,7 @@ class ImageControl:
     def set_frame_ready_callback(
         self,
         grabber: HGRABBER,
-        callback: Callable[[HGRABBER, ctypes.pointer, int, ctypes.Structure], None],
+        callback: Callable[[HGRABBER, Any, int, ctypes.Structure], None],
         data: ctypes.Structure,
     ) -> None:
         self._ic.IC_SetFrameReadyCallback(

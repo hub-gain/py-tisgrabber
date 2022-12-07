@@ -1,4 +1,4 @@
-from tisgrabber.tisgrabber import ImageFileTypes
+from tisgrabber.enums import ImageFileType
 from tisgrabber.wrapper import ImageControl
 
 ic = ImageControl()
@@ -16,7 +16,7 @@ if ic.is_dev_valid(grabber):
             if key == "s":
                 ic.snap_image(grabber, 2000)
                 print("Image snapped.")
-                ic.save_image(grabber, "image.png", ImageFileTypes.JPEG, 90)
+                ic.save_image(grabber, "image.png", ImageFileType.JPEG, 90)
                 print("Image saved.")
         ic.stop_live(grabber)
     finally:

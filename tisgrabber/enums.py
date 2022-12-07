@@ -30,3 +30,16 @@ class CameraProperty(Enum):
     EXPOSURE = 4
     IRIS = 5
     FOCUS = 6
+
+
+class VideoProperty(Enum):
+    BRIGHTNESS = 0
+    CONTRAST = 1
+    HUE = 2
+    SATURATION = 3
+    SHARPNESS = 4
+    GAMMA = 5
+    COLORENABLE = 6
+    WHITEBALANCE = 7
+    BLACKLIGHTCOMPENSATION = 8
+    GAIN = 9
