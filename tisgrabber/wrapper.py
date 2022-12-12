@@ -99,7 +99,9 @@ class ImageControl:
     def set_camera_property(
         self, grabber: HGRABBER, property: CameraProperty, value: int
     ) -> None:
-        err = self._ic.IC_SetCameraProperty(grabber, property.value, value)
+        err = self._ic.IC_SetCameraProperty(
+            grabber, ctypes.c_int(property.value), ctypes.c_int(value)
+        )
         if err != IC_SUCCESS:
             raise ICError(
                 f"An error occurred while setting camera property. Error code {err}."
@@ -112,7 +114,7 @@ class ImageControl:
         max_ = ctypes.c_long()
         err = self._ic.IC_CameraPropertyGetRange(
             grabber,
-            property.value,
+            ctypes.c_int(property.value),
             ctypes.byref(min_),
             ctypes.byref(max_),
         )
@@ -132,7 +134,7 @@ class ImageControl:
     def get_camera_property(self, grabber: HGRABBER, property: CameraProperty) -> int:
         value = ctypes.c_long()
         err = self._ic.IC_GetCameraProperty(
-            grabber, property.value, ctypes.byref(value)
+            grabber, ctypes.c_int(property.value), ctypes.byref(value)
         )
         if err == IC_SUCCESS:
             return value.value
@@ -376,7 +378,8 @@ class ImageControl:
     def is_dev_valid(self, grabber: HGRABBER) -> bool:
         return bool(self._ic.IC_IsDevValid(grabber))
 
-    # def show_property_dialog()
+    def show_property_dialog(self, grabber: HGRABBER) -> None:
+        _ = self._ic.IC_ShowPropertyDialog(grabber)
 
     def show_device_selection_dialog(
         self, grabber: Optional[HGRABBER] = None
@@ -429,11 +432,25 @@ class ImageControl:
 
     # def set_trigger_polarity()
 
-    # def get_exp_reg_val_range()
+    def get_exp_reg_val_range(self, grabber: HGRABBER) -> tuple[int, int]:
+        min_ = ctypes.c_int()
+        max_ = ctypes.c_int()
+        self._ic.IC_GetExpRegValRange(grabber, ctypes.byref(min_), ctypes.byref(max_))
+        return min_.value, max_.value
 
-    # def get_exp_reg_val()
+    def get_exp_reg_val(self, grabber: HGRABBER) -> int:
+        value = ctypes.c_long()
+        err = self._ic.IC_GetExpRegVal(grabber, value)
+        if err != IC_SUCCESS:
+            raise ICError("Failed to get exposure register value")
+        return value.value
 
-    # def set_exp_reg_val()
+    def set_exp_reg_val(self, grabber: HGRABBER, value: int) -> None:
+        err = self._ic.IC_SetExpRegVal(grabber, ctypes.c_long(value))
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"Failed to set exposure register value to {value}. Error code: {err}"
+            )
 
     # def enable_exp_reg_val_auto()
 
