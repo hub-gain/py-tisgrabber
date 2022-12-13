@@ -496,22 +496,12 @@ def declare_functions(ic):
     ic.IC_enableAVICapturePause.argtypes = (POINTER(HGRABBER), c_int)
 
 
-def load_library(lib_path=None):
-    if lib_path is None:
-        lib_path = os.environ.get("TISGRABBER")
-        if lib_path is None:
-            raise ValueError(
-                (
-                    "TISGRABBER environment variable not set. Download and install IC "
-                    "Imaging Control C Library from "
-                    "https://www.theimagingsource.com/support/downloads-for-windows/software-development-kits-sdks/tisgrabberdll/"  # noqa: E501
-                )
-            )
-        lib_path = Path(lib_path).parent
-        if platform.machine().endswith("64"):
-            lib_path = lib_path / "bin" / "x64" / "tisgrabber_x64.dll"
-        else:
-            lib_path = lib_path / "bin" / "win32" / "tisgrabber.dll"
+def load_library():
+    lib_path = Path(__file__).parent / "dll"
+    if platform.machine().endswith("64"):
+        lib_path = lib_path / "x64" / "tisgrabber_x64.dll"
+    else:
+        lib_path = lib_path / "win32" / "tisgrabber.dll"
     ic = cdll.LoadLibrary(str(lib_path))
     declare_functions(ic)
     return ic
