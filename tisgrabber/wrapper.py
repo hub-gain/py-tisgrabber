@@ -442,7 +442,7 @@ class ImageControl:
         value = ctypes.c_long()
         err = self._ic.IC_GetExpRegVal(grabber, value)
         if err != IC_SUCCESS:
-            raise ICError("Failed to get exposure register value")
+            raise ICError("Failed to get exposure register value. Error code: {err}")
         return value.value
 
     def set_exp_reg_val(self, grabber: HGRABBER, value: int) -> None:
@@ -452,15 +452,46 @@ class ImageControl:
                 f"Failed to set exposure register value to {value}. Error code: {err}"
             )
 
-    # def enable_exp_reg_val_auto()
+    def enable_exp_reg_val_auto(self, grabber: HGRABBER, enable: bool) -> None:
+        err = self._ic.IC_EnableExpRegValAuto(grabber, int(enable))
+        if err != IC_SUCCESS:
+            raise ICError(
+                (
+                    f"Failed to set exposure register value auto to {enable}. "
+                    f"Error code: {err}"
+                )
+            )
 
-    # def get_exp_reg_val_auto()
+    def get_exp_reg_val_auto(self, grabber: HGRABBER) -> bool:
+        value = ctypes.c_int()
+        err = self._ic.IC_GetExpRegValAuto(grabber, ctypes.byref(value))
+        if err != IC_SUCCESS:
+            raise ICError(
+                "Failed to get exposure register value auto. Error code: {err}"
+            )
+        return bool(value.value)
 
-    # def is_exp_abs_val_available()
+    def is_exp_abs_val_available(self, grabber: HGRABBER) -> bool:
+        return bool(self._ic.IC_IsExpAbsValAvailable(grabber))
 
-    # def get_exp_abs_val_range()
+    def get_exp_abs_val_range(self, grabber: HGRABBER) -> tuple[float, float]:
+        min_ = ctypes.c_float()
+        max_ = ctypes.c_float()
+        err = self._ic.IC_GetExpAbsValRange(
+            grabber, ctypes.byref(min_), ctypes.byref(max_)
+        )
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"Failed to get exposure absolute value range. Error code: {err}"
+            )
+        return min_.value, max_.value
 
-    # def get_exp_abs_val()
+    def get_exp_abs_val(self, grabber: HGRABBER) -> float:
+        value = ctypes.c_float()
+        err = self._ic.IC_GetExpAbsVal(grabber, ctypes.byref(value))
+        if err != IC_SUCCESS:
+            raise ICError("Failed to get exposure absolute value. Error code: {err}")
+        return value.value
 
     # def get_color_enhancement()
 
