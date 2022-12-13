@@ -31,6 +31,9 @@ dev = [
 ]
 examples = ["matplotlib"]
 
+[tool.setuptools.package-data]
+dlls = ["*.dll"]
+
 [tool.setuptools_scm]
 
 [project.urls]
