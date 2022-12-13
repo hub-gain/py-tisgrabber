@@ -65,3 +65,32 @@ class PropertyElementWrongInterfaceError(ICError):
     """
 
     pass
+
+
+class NoPropertySetError(ICError):
+    """Exception raised when a property set is not available."""
+
+    pass
+
+
+def check_device_handle_error_code(err: int) -> None:
+    if err == IC_SUCCESS:
+        return
+    if err == IC_NO_HANDLE:
+        raise NoHandleError("Invalid grabber handle")
+    if err == IC_NO_DEVICE:
+        raise NoDeviceError("No video capture device is opened")
+
+
+def check_property_error_code(err: int) -> None:
+    if err == IC_SUCCESS:
+        return
+    check_device_handle_error_code(err)
+    if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
+        raise PropertyItemNotAvailableError("Requested property is not available.")
+    if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
+        raise PropertyElementNotAvailableError("Requested element is not available.")
+    if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
+        raise PropertyElementWrongInterfaceError(
+            "Requested element does not have the needed interface."
+        )

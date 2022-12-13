@@ -7,22 +7,18 @@ import numpy as np
 from .enums import CameraProperty, ImageFileType, VideoProperty
 from .exceptions import (
     IC_ERROR,
-    IC_NO_DEVICE,
     IC_NO_HANDLE,
+    IC_NO_PROPERTYSET,
     IC_NOT_AVAILABLE,
     IC_NOT_IN_LIVEMODE,
-    IC_PROPERTY_ELEMENT_NOT_AVAILABLE,
-    IC_PROPERTY_ELEMENT_WRONG_INTERFACE,
-    IC_PROPERTY_ITEM_NOT_AVAILABLE,
     IC_SUCCESS,
     ICError,
-    NoDeviceError,
     NoHandleError,
+    NoPropertySetError,
     NotAvailableError,
     NotInLivemodeError,
-    PropertyElementNotAvailableError,
-    PropertyElementWrongInterfaceError,
-    PropertypropNotAvailableError,
+    check_device_handle_error_code,
+    check_property_error_code,
 )
 from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, load_library
 
@@ -377,14 +373,16 @@ class ImageControl:
         return self._ic.IC_ShowDeviceSelectionDialog(grabber)
 
     def is_trigger_available(self, grabber: HGRABBER) -> bool:
-        return bool(self._ic.IC_IsTriggerAvailable(grabber))
+        err = self._ic.IC_IsTriggerAvailable(grabber)
+        check_device_handle_error_code(err)
+        return bool(err)
 
     def enable_trigger(self, grabber: HGRABBER, enable: bool) -> None:
         err = self._ic.IC_EnableTrigger(grabber, int(enable))
-        if err != IC_SUCCESS:
-            raise ICError(
-                f"An error occurred while enabling trigger. Error code {err}."
-            )
+        if err == IC_NOT_AVAILABLE:
+            raise NotAvailableError("Device does not support triggering.")
+        if err == IC_NO_PROPERTYSET:
+            raise NoPropertySetError("Failed to query the property set of the device.")
 
     # def remove_overlay()
 
@@ -418,11 +416,23 @@ class ImageControl:
         )
 
     def set_continious_mode(self, grabber: HGRABBER, enable: bool) -> None:
-        self._ic.IC_SetContinuousMode(grabber, int(enable))
+        err = self._ic.IC_SetContinuousMode(grabber, int(enable))
+        if err == IC_NOT_IN_LIVEMODE:
+            raise NotInLivemodeError(
+                "Device is currently streaming, so setting continious mode failed."
+            )
+        if err == IC_NO_HANDLE:
+            raise NoHandleError("Device handle is invalid.")
 
-    #  Device prop Functions -------------------------------------------------------
+    #  Device property Functions -------------------------------------------------------
 
-    # def signal_detected()
+    def signal_detected(self, grabber: HGRABBER) -> bool:
+        err = bool(self._ic.IC_SignalDetected(grabber))
+        check_device_handle_error_code(err)
+        if err == IC_NOT_IN_LIVEMODE:
+            raise NotInLivemodeError("Turn on live mode first.")
+        if err == IC_NOT_AVAILABLE:
+            raise NotAvailableError("Signal detection property is not available.")
 
     # def get_trigger_modes()
 
@@ -502,14 +512,11 @@ class ImageControl:
 
     def set_frame_rate(self, grabber: HGRABBER, frame_rate: float) -> None:
         err = self._ic.IC_SetFrameRate(grabber, frame_rate)
+        check_device_handle_error_code(err)
         if err == IC_NOT_AVAILABLE:
             raise NotAvailableError(
                 "Setting frame rate is not supported by the current device"
             )
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
         if err == IC_NOT_IN_LIVEMODE:
             raise NotInLivemodeError("Setting frame rate is not possible in live mode")
 
@@ -529,26 +536,6 @@ class ImageControl:
 
     # def set_window_position()
 
-    def _check_property_error_code(self, err: int, prop: str, element: str) -> None:
-        if err == IC_SUCCESS:
-            return
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertypropNotAvailableError(
-                f"Requested prop {prop} is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                f"Requested element {element} is not available."
-            )
-        if err == IC_PROPERTY_ELEMENT_WRONG_INTERFACE:
-            raise PropertyElementWrongInterfaceError(
-                f"Requested element {element} does not have the needed interface."
-            )
-
     def is_property_available(self, grabber: HGRABBER, prop: str) -> bool:
         return bool(self._ic.IC_IsPropertyAvailable(grabber, prop.encode("utf-8")))
 
@@ -559,7 +546,7 @@ class ImageControl:
         err = self._ic.IC_GetPropertyValueRange(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
         return (min_.value, max_.value)
 
     def get_property_value(self, grabber: HGRABBER, prop: str, element: str) -> int:
@@ -567,7 +554,7 @@ class ImageControl:
         err = self._ic.IC_GetPropertyValue(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
         return value.value
 
     def set_property_value(
@@ -576,7 +563,7 @@ class ImageControl:
         err = self._ic.IC_SetPropertyValue(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
 
     def get_property_absolute_value_range(
         self, grabber: HGRABBER, prop: str, element: str
@@ -585,7 +572,7 @@ class ImageControl:
         err = self._ic.IC_GetPropertyAbsoluteValueRange(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
         return (min_.value, max_.value)
 
     def get_property_absolute_value(
@@ -595,7 +582,7 @@ class ImageControl:
         err = self._ic.IC_GetPropertyAbsoluteValue(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
         return value.value
 
     def set_property_absolute_value(
@@ -604,14 +591,14 @@ class ImageControl:
         err = self._ic.IC_SetPropertyAbsoluteValue(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
 
     def get_property_switch(self, grabber: HGRABBER, prop: str, element: str) -> bool:
         on = ctypes.c_int()
         err = self._ic.IC_GetPropertySwitch(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), on
         )
-        self._check_property_error_code(err, prop, element)
+        check_property_error_code(err)
         return bool(on.value)
 
     def set_property_switch(
@@ -620,22 +607,13 @@ class ImageControl:
         err = self._ic.IC_SetPropertySwitch(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), int(on)
         )
-        self._check_property_error_code(err, prop, element)
+        self.check_property_error_code(err)
 
     def property_one_push(self, grabber: HGRABBER, prop: str) -> None:
         err = self._ic.IC_PropertyOnePush(
             grabber, prop.encode("utf-8"), "One Push".encode("utf-8")
         )
-        if err == IC_NO_HANDLE:
-            raise NoHandleError("Invalid grabber handle")
-        if err == IC_NO_DEVICE:
-            raise NoDeviceError("No video capture device is opened")
-        if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertypropNotAvailableError("Requested prop is not available.")
-        if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
-            raise PropertyElementNotAvailableError(
-                "Requested element is not available."
-            )
+        check_property_error_code(err)
 
     # def get_property_map_strings()
 
