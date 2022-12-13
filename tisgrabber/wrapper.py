@@ -98,10 +98,8 @@ class ImageControl:
         err = self._ic.IC_SetCameraProperty(
             grabber, ctypes.c_int(prop.value), ctypes.c_int(value)
         )
-        if err != IC_SUCCESS:
-            raise ICError(
-                f"An error occurred while setting camera prop. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while setting camera property.")
 
     def camera_property_get_range(
         self, grabber: HGRABBER, prop: CameraProperty
@@ -115,41 +113,24 @@ class ImageControl:
             ctypes.byref(max_),
         )
         if err == IC_SUCCESS:
-            return (
-                min_.value,
-                max_.value,
-            )
-        else:
-            raise ICError(
-                (
-                    "An error occurred while getting camera prop range."
-                    f"Error code {err}."
-                )
-            )
+            raise ICError("An error occurred while getting camera property range.")
+        return min_.value, max_.value
 
     def get_camera_property(self, grabber: HGRABBER, prop: CameraProperty) -> int:
         value = ctypes.c_long()
         err = self._ic.IC_GetCameraProperty(
             grabber, ctypes.c_int(prop.value), ctypes.byref(value)
         )
-        if err == IC_SUCCESS:
-            return value.value
-        else:
-            raise ICError(
-                f"An error occurred while getting camera prop. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while getting camera property.")
+        return value.value
 
     def enable_auto_camera_property(
         self, grabber: HGRABBER, prop: CameraProperty, enable: bool
     ) -> None:
         err = self._ic.IC_EnableAutoCameraProperty(grabber, prop.value, int(enable))
-        if err != IC_SUCCESS:
-            raise ICError(
-                (
-                    "An error occurred while enabling auto camera prop."
-                    f"Error code {err}."
-                )
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while enabling auto camera property.")
 
     def is_camera_property_auto_available(
         self, grabber: HGRABBER, prop: CameraProperty
@@ -424,8 +405,6 @@ class ImageControl:
         if err == IC_NO_HANDLE:
             raise NoHandleError("Device handle is invalid.")
 
-    #  Device property Functions -------------------------------------------------------
-
     def signal_detected(self, grabber: HGRABBER) -> bool:
         err = bool(self._ic.IC_SignalDetected(grabber))
         check_device_handle_error_code(err)
@@ -464,10 +443,7 @@ class ImageControl:
         err = self._ic.IC_EnableExpRegValAuto(grabber, int(enable))
         if err != IC_SUCCESS:
             raise ICError(
-                (
-                    f"Failed to set exposure register value auto to {enable}. "
-                    f"Error code: {err}"
-                )
+                f"Failed to set exposure auto register value. Error code: {err}"
             )
 
     def get_exp_reg_val_auto(self, grabber: HGRABBER) -> bool:
@@ -475,7 +451,7 @@ class ImageControl:
         err = self._ic.IC_GetExpRegValAuto(grabber, ctypes.byref(value))
         if err != IC_SUCCESS:
             raise ICError(
-                "Failed to get exposure register value auto. Error code: {err}"
+                f"Failed to get exposure register value auto. Error code: {err}"
             )
         return bool(value.value)
 
@@ -507,8 +483,9 @@ class ImageControl:
 
     def software_trigger(self, grabber: HGRABBER) -> None:
         err = self._ic.IC_SoftwareTrigger(grabber)
-        if err != IC_SUCCESS:
-            raise ICError(f"Failed to trigger. Error code: {err}")
+        check_device_handle_error_code(err)
+        if err == IC_NOT_AVAILABLE:
+            raise NotAvailableError("Software trigger not available for this device.")
 
     def set_frame_rate(self, grabber: HGRABBER, frame_rate: float) -> None:
         err = self._ic.IC_SetFrameRate(grabber, frame_rate)
@@ -537,7 +514,9 @@ class ImageControl:
     # def set_window_position()
 
     def is_property_available(self, grabber: HGRABBER, prop: str) -> bool:
-        return bool(self._ic.IC_IsPropertyAvailable(grabber, prop.encode("utf-8")))
+        err = self._ic.IC_IsPropertyAvailable(grabber, prop.encode("utf-8"))
+        check_property_error_code(err)
+        return bool(err)
 
     def get_property_value_range(
         self, grabber: HGRABBER, prop: str, element: str
