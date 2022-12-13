@@ -22,7 +22,7 @@ from .exceptions import (
     NotInLivemodeError,
     PropertyElementNotAvailableError,
     PropertyElementWrongInterfaceError,
-    PropertyItemNotAvailableError,
+    PropertypropNotAvailableError,
 )
 from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, load_library
 
@@ -93,28 +93,28 @@ class ImageControl:
     def stop_live(self, grabber: HGRABBER) -> None:
         return self._ic.IC_StopLive(grabber)
 
-    def is_camera_property_available(self, grabber, property: CameraProperty) -> bool:
-        return bool(self._ic.IC_IsCameraPropertyAvailable(grabber, property.value))
+    def is_camera_property_available(self, grabber, prop: CameraProperty) -> bool:
+        return bool(self._ic.IC_IsCameraPropertyAvailable(grabber, prop.value))
 
     def set_camera_property(
-        self, grabber: HGRABBER, property: CameraProperty, value: int
+        self, grabber: HGRABBER, prop: CameraProperty, value: int
     ) -> None:
         err = self._ic.IC_SetCameraProperty(
-            grabber, ctypes.c_int(property.value), ctypes.c_int(value)
+            grabber, ctypes.c_int(prop.value), ctypes.c_int(value)
         )
         if err != IC_SUCCESS:
             raise ICError(
-                f"An error occurred while setting camera property. Error code {err}."
+                f"An error occurred while setting camera prop. Error code {err}."
             )
 
     def camera_property_get_range(
-        self, grabber: HGRABBER, property: CameraProperty
+        self, grabber: HGRABBER, prop: CameraProperty
     ) -> tuple[int, int]:
         min_ = ctypes.c_long()
         max_ = ctypes.c_long()
         err = self._ic.IC_CameraPropertyGetRange(
             grabber,
-            ctypes.c_int(property.value),
+            ctypes.c_int(prop.value),
             ctypes.byref(min_),
             ctypes.byref(max_),
         )
@@ -126,51 +126,47 @@ class ImageControl:
         else:
             raise ICError(
                 (
-                    "An error occurred while getting camera property range."
+                    "An error occurred while getting camera prop range."
                     f"Error code {err}."
                 )
             )
 
-    def get_camera_property(self, grabber: HGRABBER, property: CameraProperty) -> int:
+    def get_camera_property(self, grabber: HGRABBER, prop: CameraProperty) -> int:
         value = ctypes.c_long()
         err = self._ic.IC_GetCameraProperty(
-            grabber, ctypes.c_int(property.value), ctypes.byref(value)
+            grabber, ctypes.c_int(prop.value), ctypes.byref(value)
         )
         if err == IC_SUCCESS:
             return value.value
         else:
             raise ICError(
-                f"An error occurred while getting camera property. Error code {err}."
+                f"An error occurred while getting camera prop. Error code {err}."
             )
 
     def enable_auto_camera_property(
-        self, grabber: HGRABBER, property: CameraProperty, enable: bool
+        self, grabber: HGRABBER, prop: CameraProperty, enable: bool
     ) -> None:
-        err = self._ic.IC_EnableAutoCameraProperty(grabber, property.value, int(enable))
+        err = self._ic.IC_EnableAutoCameraProperty(grabber, prop.value, int(enable))
         if err != IC_SUCCESS:
             raise ICError(
                 (
-                    "An error occurred while enabling auto camera property."
+                    "An error occurred while enabling auto camera prop."
                     f"Error code {err}."
                 )
             )
 
     def is_camera_property_auto_available(
-        self, grabber: HGRABBER, property: CameraProperty
+        self, grabber: HGRABBER, prop: CameraProperty
     ) -> bool:
         # NOTE: explicit conversion to c_int is necessary here
         return bool(
-            self._ic.IC_IsCameraPropertyAutoAvailable(
-                grabber, ctypes.c_int(property.value)
-            )
+            self._ic.IC_IsCameraPropertyAutoAvailable(grabber, ctypes.c_int(prop.value))
         )
 
-    def get_auto_camera_property(
-        self, grabber: HGRABBER, property: CameraProperty
-    ) -> bool:
+    def get_auto_camera_property(self, grabber: HGRABBER, prop: CameraProperty) -> bool:
         value = ctypes.c_int()
         err = self._ic.IC_GetAutoCameraProperty(
-            grabber, property.value, ctypes.byref(value)
+            grabber, prop.value, ctypes.byref(value)
         )
         if err == IC_SUCCESS:
             return bool(value.value)
@@ -179,17 +175,17 @@ class ImageControl:
                 f"An error occurred while getting auto camera value. Error code {err}."
             )
 
-    def is_video_property_available(self, grabber, property: VideoProperty) -> bool:
-        return bool(self._ic.IC_IsVideoPropertyAvailable(grabber, property.value))
+    def is_video_property_available(self, grabber, prop: VideoProperty) -> bool:
+        return bool(self._ic.IC_IsVideoPropertyAvailable(grabber, prop.value))
 
     def video_property_get_range(
-        self, grabber: HGRABBER, property: VideoProperty
+        self, grabber: HGRABBER, prop: VideoProperty
     ) -> tuple[int, int]:
         min_ = ctypes.c_long()
         max_ = ctypes.c_long()
         err = self._ic.IC_VideoPropertyGetRange(
             grabber,
-            property.value,
+            prop.value,
             ctypes.byref(min_),
             ctypes.byref(max_),
         )
@@ -201,37 +197,31 @@ class ImageControl:
         else:
             raise ICError(
                 (
-                    "An error occurred while getting video property range."
+                    "An error occurred while getting video prop range."
                     f"Error code {err}."
                 )
             )
 
-    def get_video_property(self, grabber: HGRABBER, property: VideoProperty) -> int:
+    def get_video_property(self, grabber: HGRABBER, prop: VideoProperty) -> int:
         value = ctypes.c_long()
-        err = self._ic.IC_GetVideoProperty(grabber, property.value, ctypes.byref(value))
+        err = self._ic.IC_GetVideoProperty(grabber, prop.value, ctypes.byref(value))
         if err == IC_SUCCESS:
             return value.value
         else:
             raise ICError(
-                f"An error occurred while getting video property. Error code {err}."
+                f"An error occurred while getting video prop. Error code {err}."
             )
 
     def is_video_property_auto_available(
-        self, grabber: HGRABBER, property: VideoProperty
+        self, grabber: HGRABBER, prop: VideoProperty
     ) -> bool:
         return bool(
-            self._ic.IC_IsVideoPropertyAutoAvailable(
-                grabber, ctypes.c_int(property.value)
-            )
+            self._ic.IC_IsVideoPropertyAutoAvailable(grabber, ctypes.c_int(prop.value))
         )
 
-    def get_auto_video_property(
-        self, grabber: HGRABBER, property: VideoProperty
-    ) -> bool:
+    def get_auto_video_property(self, grabber: HGRABBER, prop: VideoProperty) -> bool:
         value = ctypes.c_int()
-        err = self._ic.IC_GetAutoVideoProperty(
-            grabber, property.value, ctypes.byref(value)
-        )
+        err = self._ic.IC_GetAutoVideoProperty(grabber, prop.value, ctypes.byref(value))
         if err == IC_SUCCESS:
             return bool(value.value)
         else:
@@ -240,22 +230,22 @@ class ImageControl:
             )
 
     def set_video_property(
-        self, grabber: HGRABBER, property: VideoProperty, value: int
+        self, grabber: HGRABBER, prop: VideoProperty, value: int
     ) -> None:
-        err = self._ic.IC_SetVideoProperty(grabber, property.value, value)
+        err = self._ic.IC_SetVideoProperty(grabber, prop.value, value)
         if err != IC_SUCCESS:
             raise ICError(
-                f"An error occurred while setting video property. Error code {err}."
+                f"An error occurred while setting video prop. Error code {err}."
             )
 
     def enable_auto_video_property(
-        self, grabber: HGRABBER, property: VideoProperty, enable: bool
+        self, grabber: HGRABBER, prop: VideoProperty, enable: bool
     ) -> None:
-        err = self._ic.IC_EnableAutoVideoProperty(grabber, property.value, int(enable))
+        err = self._ic.IC_EnableAutoVideoProperty(grabber, prop.value, int(enable))
         if err != IC_SUCCESS:
             raise ICError(
                 (
-                    "An error occurred while enabling auto video property."
+                    "An error occurred while enabling auto video prop."
                     f"Error code {err}."
                 )
             )
@@ -386,9 +376,15 @@ class ImageControl:
     ) -> HGRABBER:
         return self._ic.IC_ShowDeviceSelectionDialog(grabber)
 
-    # def is_trigger_available()
+    def is_trigger_available(self, grabber: HGRABBER) -> bool:
+        return bool(self._ic.IC_IsTriggerAvailable(grabber))
 
-    # def enable_trigger()
+    def enable_trigger(self, grabber: HGRABBER, enable: bool) -> None:
+        err = self._ic.IC_EnableTrigger(grabber, int(enable))
+        if err != IC_SUCCESS:
+            raise ICError(
+                f"An error occurred while enabling trigger. Error code {err}."
+            )
 
     # def remove_overlay()
 
@@ -423,6 +419,8 @@ class ImageControl:
 
     def set_continious_mode(self, grabber: HGRABBER, enable: bool) -> None:
         self._ic.IC_SetContinuousMode(grabber, int(enable))
+
+    #  Device prop Functions -------------------------------------------------------
 
     # def signal_detected()
 
@@ -497,7 +495,10 @@ class ImageControl:
 
     # def set_color_enhancement()
 
-    # def soft_trigger()
+    def software_trigger(self, grabber: HGRABBER) -> None:
+        err = self._ic.IC_SoftwareTrigger(grabber)
+        if err != IC_SUCCESS:
+            raise ICError(f"Failed to trigger. Error code: {err}")
 
     def set_frame_rate(self, grabber: HGRABBER, frame_rate: float) -> None:
         err = self._ic.IC_SetFrameRate(grabber, frame_rate)
@@ -517,7 +518,10 @@ class ImageControl:
 
     # def focus_one_push()
 
-    # def reset_properties()
+    def reset_properties(self, grabber: HGRABBER) -> None:
+        err = self._ic.IC_ResetProperties(grabber)
+        if err != IC_SUCCESS:
+            raise ICError(f"Failed to reset properties. Error code: {err}")
 
     # def property_set_set()
 
@@ -525,7 +529,7 @@ class ImageControl:
 
     # def set_window_position()
 
-    def _check_property_error_code(self, err: int, item: str, element: str) -> None:
+    def _check_property_error_code(self, err: int, prop: str, element: str) -> None:
         if err == IC_SUCCESS:
             return
         if err == IC_NO_HANDLE:
@@ -533,8 +537,8 @@ class ImageControl:
         if err == IC_NO_DEVICE:
             raise NoDeviceError("No video capture device is opened")
         if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError(
-                f"Requested item {item} is not available."
+            raise PropertypropNotAvailableError(
+                f"Requested prop {prop} is not available."
             )
         if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
             raise PropertyElementNotAvailableError(
@@ -545,82 +549,89 @@ class ImageControl:
                 f"Requested element {element} does not have the needed interface."
             )
 
-    # def is_property_available()
+    def is_property_available(self, grabber: HGRABBER, prop: str) -> bool:
+        return bool(self._ic.IC_IsPropertyAvailable(grabber, prop.encode("utf-8")))
 
     def get_property_value_range(
-        self, grabber: HGRABBER, item: str, element: str
+        self, grabber: HGRABBER, prop: str, element: str
     ) -> tuple[int, int]:
         min_, max_ = ctypes.c_long(), ctypes.c_long()
         err = self._ic.IC_GetPropertyValueRange(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), min_, max_
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
         return (min_.value, max_.value)
 
-    def get_property_value(self, grabber: HGRABBER, item: str, element: str) -> int:
+    def get_property_value(self, grabber: HGRABBER, prop: str, element: str) -> int:
         value = ctypes.c_long()
         err = self._ic.IC_GetPropertyValue(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), value
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
         return value.value
 
-    # def set_property_value():
+    def set_property_value(
+        self, grabber: HGRABBER, prop: str, element: str, value: int
+    ) -> None:
+        err = self._ic.IC_SetPropertyValue(
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), value
+        )
+        self._check_property_error_code(err, prop, element)
 
     def get_property_absolute_value_range(
-        self, grabber: HGRABBER, item: str, element: str
+        self, grabber: HGRABBER, prop: str, element: str
     ) -> tuple[float, float]:
         min_, max_ = ctypes.c_float(), ctypes.c_float()
         err = self._ic.IC_GetPropertyAbsoluteValueRange(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), min_, max_
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), min_, max_
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
         return (min_.value, max_.value)
 
     def get_property_absolute_value(
-        self, grabber: HGRABBER, item: str, element: str
+        self, grabber: HGRABBER, prop: str, element: str
     ) -> float:
         value = ctypes.c_float()
         err = self._ic.IC_GetPropertyAbsoluteValue(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), value
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
         return value.value
 
     def set_property_absolute_value(
-        self, grabber: HGRABBER, item: str, element: str, value: float
+        self, grabber: HGRABBER, prop: str, element: str, value: float
     ) -> None:
         err = self._ic.IC_SetPropertyAbsoluteValue(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), value
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), value
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
 
-    def get_property_switch(self, grabber: HGRABBER, item: str, element: str) -> bool:
+    def get_property_switch(self, grabber: HGRABBER, prop: str, element: str) -> bool:
         on = ctypes.c_int()
         err = self._ic.IC_GetPropertySwitch(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), on
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), on
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
         return bool(on.value)
 
     def set_property_switch(
-        self, grabber: HGRABBER, item: str, element: str, on: bool
+        self, grabber: HGRABBER, prop: str, element: str, on: bool
     ) -> None:
         err = self._ic.IC_SetPropertySwitch(
-            grabber, item.encode("utf-8"), element.encode("utf-8"), int(on)
+            grabber, prop.encode("utf-8"), element.encode("utf-8"), int(on)
         )
-        self._check_property_error_code(err, item, element)
+        self._check_property_error_code(err, prop, element)
 
-    def property_one_push(self, grabber: HGRABBER, item: str) -> None:
+    def property_one_push(self, grabber: HGRABBER, prop: str) -> None:
         err = self._ic.IC_PropertyOnePush(
-            grabber, item.encode("utf-8"), "One Push".encode("utf-8")
+            grabber, prop.encode("utf-8"), "One Push".encode("utf-8")
         )
         if err == IC_NO_HANDLE:
             raise NoHandleError("Invalid grabber handle")
         if err == IC_NO_DEVICE:
             raise NoDeviceError("No video capture device is opened")
         if err == IC_PROPERTY_ITEM_NOT_AVAILABLE:
-            raise PropertyItemNotAvailableError("Requested item is not available.")
+            raise PropertypropNotAvailableError("Requested prop is not available.")
         if err == IC_PROPERTY_ELEMENT_NOT_AVAILABLE:
             raise PropertyElementNotAvailableError(
                 "Requested element is not available."
