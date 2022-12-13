@@ -477,6 +477,9 @@ class ImageControl:
 
     # def focus_one_push()
 
+    def print_item_and_element_names(self, grabber: HGRABBER) -> None:
+        self._ic.IC_PrintItemAndElementNames(grabber)
+
     def reset_properties(self, grabber: HGRABBER) -> None:
         err = self._ic.IC_ResetProperties(grabber)
         if err != IC_SUCCESS:

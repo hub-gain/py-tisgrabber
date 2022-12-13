@@ -5,7 +5,7 @@ ic = ImageControl()
 grabber = ic.show_device_selection_dialog()
 
 if ic.is_dev_valid(grabber):
-    print("IC_printItemandElementNames does not exist.")
+    ic.print_item_and_element_names(grabber)
 else:
     print("No device opened")
 
