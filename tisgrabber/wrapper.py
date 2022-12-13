@@ -136,21 +136,20 @@ class ImageControl:
         self, grabber: HGRABBER, prop: CameraProperty
     ) -> bool:
         # NOTE: explicit conversion to c_int is necessary here
-        return bool(
-            self._ic.IC_IsCameraPropertyAutoAvailable(grabber, ctypes.c_int(prop.value))
+        err = self._ic.IC_IsCameraPropertyAutoAvailable(
+            grabber, ctypes.c_int(prop.value)
         )
+        check_property_error_code(err)
+        return bool(err)
 
     def get_auto_camera_property(self, grabber: HGRABBER, prop: CameraProperty) -> bool:
         value = ctypes.c_int()
         err = self._ic.IC_GetAutoCameraProperty(
             grabber, prop.value, ctypes.byref(value)
         )
-        if err == IC_SUCCESS:
-            return bool(value.value)
-        else:
-            raise ICError(
-                f"An error occurred while getting auto camera value. Error code {err}."
-            )
+        if err != IC_SUCCESS:
+            raise ICError(f"Error {err} occurred while getting auto camera value.")
+        return bool(value.value)
 
     def is_video_property_available(self, grabber, prop: VideoProperty) -> bool:
         return bool(self._ic.IC_IsVideoPropertyAvailable(grabber, prop.value))
@@ -166,28 +165,16 @@ class ImageControl:
             ctypes.byref(min_),
             ctypes.byref(max_),
         )
-        if err == IC_SUCCESS:
-            return (
-                min_.value,
-                max_.value,
-            )
-        else:
-            raise ICError(
-                (
-                    "An error occurred while getting video prop range."
-                    f"Error code {err}."
-                )
-            )
+        if err != IC_SUCCESS:
+            raise ICError(f"Error {err} occurred while getting video property range.")
+        return min_.value, max_.value
 
     def get_video_property(self, grabber: HGRABBER, prop: VideoProperty) -> int:
         value = ctypes.c_long()
         err = self._ic.IC_GetVideoProperty(grabber, prop.value, ctypes.byref(value))
-        if err == IC_SUCCESS:
-            return value.value
-        else:
-            raise ICError(
-                f"An error occurred while getting video prop. Error code {err}."
-            )
+        if err != IC_SUCCESS:
+            raise ICError(f"Error {err} occurred while getting video property.")
+        return value.value
 
     def is_video_property_auto_available(
         self, grabber: HGRABBER, prop: VideoProperty
@@ -199,33 +186,23 @@ class ImageControl:
     def get_auto_video_property(self, grabber: HGRABBER, prop: VideoProperty) -> bool:
         value = ctypes.c_int()
         err = self._ic.IC_GetAutoVideoProperty(grabber, prop.value, ctypes.byref(value))
-        if err == IC_SUCCESS:
-            return bool(value.value)
-        else:
-            raise ICError(
-                f"An error occurred while getting auto video value. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while getting auto video value.")
+        return bool(value.value)
 
     def set_video_property(
         self, grabber: HGRABBER, prop: VideoProperty, value: int
     ) -> None:
         err = self._ic.IC_SetVideoProperty(grabber, prop.value, value)
-        if err != IC_SUCCESS:
-            raise ICError(
-                f"An error occurred while setting video prop. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("Error occurred while setting video property.")
 
     def enable_auto_video_property(
         self, grabber: HGRABBER, prop: VideoProperty, enable: bool
     ) -> None:
         err = self._ic.IC_EnableAutoVideoProperty(grabber, prop.value, int(enable))
-        if err != IC_SUCCESS:
-            raise ICError(
-                (
-                    "An error occurred while enabling auto video prop."
-                    f"Error code {err}."
-                )
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while enabling auto video property.")
 
     def get_image_description(self, grabber: HGRABBER) -> tuple[int, int, int, int]:
         width = ctypes.c_long()
@@ -236,19 +213,16 @@ class ImageControl:
         err = self._ic.IC_GetImageDescription(
             grabber, width, height, bits_per_pixel, color_format
         )
-        if err == IC_SUCCESS:
-            return (width.value, height.value, bits_per_pixel.value, color_format.value)
-        else:
-            raise ICError(
-                f"An error occurred while getting image description. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while getting image description.")
+        return (width.value, height.value, bits_per_pixel.value, color_format.value)
 
     def snap_image(self, grabber: HGRABBER, timeout: int = 1000) -> None:
         err = self._ic.IC_SnapImage(grabber, timeout)
-        if err != IC_SUCCESS:
-            raise ICError(
-                f"An error occurred while snapping the image. Error code {err}."
-            )
+        if err == IC_NOT_IN_LIVEMODE:
+            raise NotInLivemodeError("The camera is not in live mode.")
+        if err == IC_ERROR:
+            raise ICError("An error occurred while snapping the image.")
 
     def save_image(
         self,
@@ -260,10 +234,8 @@ class ImageControl:
         err = self._ic.IC_SaveImage(
             grabber, str(filename).encode("utf-8"), format.value, quality
         )
-        if err != IC_SUCCESS:
-            raise ICError(
-                f"An error occurred while saving the image. Error code {err}."
-            )
+        if err == IC_ERROR:
+            raise ICError("An error occurred while saving the image.")
 
     def _get_image_ptr(self, grabber: HGRABBER):
         return self._ic.IC_GetImagePtr(grabber)
@@ -456,7 +428,10 @@ class ImageControl:
         return bool(value.value)
 
     def is_exp_abs_val_available(self, grabber: HGRABBER) -> bool:
-        return bool(self._ic.IC_IsExpAbsValAvailable(grabber))
+        err = self._ic.IC_IsExpAbsValAvailable(grabber)
+        if err < 0:
+            raise ICError(f"Failed to check if property is available. Error {err}.")
+        return bool()
 
     def get_exp_abs_val_range(self, grabber: HGRABBER) -> tuple[float, float]:
         min_ = ctypes.c_float()
@@ -613,15 +588,16 @@ class ImageControl:
     def create_frame_filter(self, name: str) -> HFRAMEFILTER:
         filter_handle = HFRAMEFILTER()
         err = self._ic.IC_CreateFrameFilter(name.encode("utf-8"), filter_handle)
-        if err == IC_SUCCESS:
-            return filter_handle
-        else:
-            raise ICError(f"Frame filter load failed. Error code {err}.")
+        if err == IC_ERROR:
+            raise ICError("Frame filter load failed. ")
+        return filter_handle
 
     def add_frame_filter_to_device(
         self, grabber: HGRABBER, filter: HFRAMEFILTER
     ) -> None:
-        self._ic.IC_AddFrameFilterToDevice(grabber, filter)
+        err = self._ic.IC_AddFrameFilterToDevice(grabber, filter)
+        if err == IC_ERROR:
+            raise ICError("Adding frame filter failed.")
 
     # def delete_frame_filter()
 
@@ -635,21 +611,39 @@ class ImageControl:
         err = self._ic.IC_FrameFilterSetParameterInt(
             filter, param.encode("utf-8"), value
         )
-        if err != IC_SUCCESS:
-            raise ICError(f"Frame filter set parameter failed. Error code {err}.")
+        check_property_error_code(err)
+        if err == IC_ERROR:
+            raise ICError("Setting frame filter parameter failed.")
 
-    # def frame_filter_set_parameter_float()
+    def frame_filter_set_parameter_float(
+        self, filter: HFRAMEFILTER, param: str, value: float
+    ) -> None:
+        err = self._ic.IC_FrameFilterSetParameterFloat(
+            filter, param.encode("utf-8"), value
+        )
+        check_property_error_code(err)
+        if err == IC_ERROR:
+            raise ICError("Setting frame filter parameter failed.")
 
     def frame_filter_set_parameter_boolean(
         self, filter: HFRAMEFILTER, param: str, value: bool
     ) -> None:
         err = self._ic.IC_FrameFilterSetParameterBoolean(
+            filter, param.encode("utf-8"), int(value)
+        )
+        check_property_error_code(err)
+        if err == IC_ERROR:
+            raise ICError("Setting frame filter parameter failed.")
+
+    def frame_filter_set_parameter_string(
+        self, filter: HFRAMEFILTER, param: str, value: str
+    ) -> None:
+        err = self._ic.IC_FrameFilterSetParameterString(
             filter, param.encode("utf-8"), value
         )
-        if err != IC_SUCCESS:
-            raise ICError(f"Frame filter set parameter failed. Error code {err}.")
-
-    # def frame_filter_set_parameter_string()
+        check_property_error_code(err)
+        if err == IC_ERROR:
+            raise ICError("Setting frame filter parameter failed.")
 
     def frame_filter_device_clear(self, grabber: HGRABBER) -> None:
         self._ic.IC_FrameFilterDeviceClear(grabber)
