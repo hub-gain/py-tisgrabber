@@ -7,6 +7,7 @@ import numpy as np
 from .enums import CameraProperty, ImageFileType, VideoProperty
 from .exceptions import (
     IC_ERROR,
+    IC_NO_DEVICE,
     IC_NO_HANDLE,
     IC_NO_PROPERTYSET,
     IC_NOT_AVAILABLE,
@@ -139,8 +140,13 @@ class ImageControl:
         err = self._ic.IC_IsCameraPropertyAutoAvailable(
             grabber, ctypes.c_int(prop.value)
         )
-        check_property_error_code(err)
-        return bool(err)
+        if err == IC_NO_DEVICE:
+            # HACK: for some reason -2 is returned instead of 0 if not available.
+            return False
+        elif err == IC_SUCCESS:
+            return True
+        else:
+            check_property_error_code(err)
 
     def get_auto_camera_property(self, grabber: HGRABBER, prop: CameraProperty) -> bool:
         value = ctypes.c_int()
