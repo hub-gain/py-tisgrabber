@@ -29,6 +29,16 @@ if ic.is_dev_valid(grabber):
         f"Exposure can be set between {1e3 * min_exposure} and {1e3 * max_exposure} ms."
     )
 
+    # Query possible exposure register values
+    min_exp_reg, max_exp_reg = ic.get_exp_reg_val_range(grabber)
+    print(f"Exposure register values msut be between {min_exp_reg} and {max_exp_reg}.")
+    exp_reg = ic.get_exp_reg_val(grabber)
+    print(f"Current exposure register value is {exp_reg}.")
+    set_to = -12
+    ic.set_exp_reg_val(grabber, set_to)
+    exp_reg = ic.get_exp_reg_val(grabber)
+    print(f"After setting exposure register value to {set_to} it is is {exp_reg}.")
+
     # Query possible gain setting values
     min_gain, max_gain = ic.get_property_value_range(grabber, "Gain", "Value")
     gain = ic.get_property_value(grabber, "Gain", "Value")
