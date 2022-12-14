@@ -30,8 +30,8 @@ DeviceLostCallbackFunction = Callable[[HGRABBER, ctypes.Structure], None]
 
 
 class ImageControl:
-    def __init__(self, lib_path=None):
-        self._ic = load_library(lib_path)
+    def __init__(self):
+        self._ic = load_library()
         err = self._ic.IC_InitLibrary()
         if err == IC_ERROR:
             raise ICError("Failed to initialize ImageControl library")
@@ -564,7 +564,7 @@ class ImageControl:
         err = self._ic.IC_SetPropertySwitch(
             grabber, prop.encode("utf-8"), element.encode("utf-8"), int(on)
         )
-        self.check_property_error_code(err)
+        check_property_error_code(err)
 
     def property_one_push(self, grabber: HGRABBER, prop: str) -> None:
         err = self._ic.IC_PropertyOnePush(
