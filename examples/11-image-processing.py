@@ -19,6 +19,7 @@ try:
                 print("Image snapped.")
                 image = ic.get_image_data(grabber)
                 print("Image data retrieved.")
+                print(image.shape)
 
                 plt.imshow(image)
                 plt.show()
