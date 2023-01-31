@@ -28,8 +28,8 @@ if ic.is_dev_valid(grabber):
         ic.set_property_switch(grabber, "Partial scan", "Auto-center", False)
         ic.start_live(grabber)
 
-        # Move the ROI on the sensor by x and y coordinates. This can be done,  while
-        # the live video is running.
+        # Move the ROI on the sensor by x and y coordinates. This can be done, while the
+        # live video is running.
         x = 0
         for y in range(480 - 240):
             ic.set_property_value(grabber, "Partial scan", "X Offset", x)
