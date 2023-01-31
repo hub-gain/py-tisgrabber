@@ -1,12 +1,13 @@
 # FIXME: Fails with
-# tisgrabber.exceptions.PropertyElementNotAvailableError: Requested element is not available.
+# tisgrabber.exceptions.PropertyElementNotAvailableError: Requested element is not
+# available.
 
 from ctypes import Structure, pointer
 
 from tisgrabber.wrapper import HGRABBER, ImageControl
 
 
-class CallbackUserData:
+class CallbackUserData(Structure):
     """Example for user data passed to the callback function."""
 
     def __init__(self):

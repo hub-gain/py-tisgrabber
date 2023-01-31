@@ -1,5 +1,6 @@
-# FIXME: Fails with 
-# ctypes.ArgumentError: argument 1: <class 'TypeError'>: expected LP_LP_c_char_Array_80_Array_40 instance instead of c_char_p_Array_5
+# FIXME: Fails with
+# ctypes.ArgumentError: argument 1: <class 'TypeError'>: expected
+# LP_LP_c_char_Array_80_Array_40 instance instead of c_char_p_Array_5
 
 from time import sleep
 
