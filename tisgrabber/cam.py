@@ -1,4 +1,4 @@
-from typing import Optional, Self
+from typing import Any, Optional, Self
 
 import numpy as np
 
@@ -184,6 +184,18 @@ class Camera:
 
     def get_image_data(self) -> np.ndarray:
         return ic.get_image_data(self._grabber)
+
+    def save_device_state_to_file(self, filename: FilePath) -> None:
+        ic.save_device_state_to_file(self._grabber, filename)
+
+    def get_image_description(self) -> tuple[int, int, int, int]:
+        return ic.get_image_description(self._grabber)
+
+    def show_property_dialog(self) -> None:
+        ic.show_property_dialog(self._grabber)
+
+    def set_window_handle(self, handle: Any) -> None:
+        ic.set_hwnd(self._grabber, handle)
 
 
 if __name__ == "__main__":
