@@ -1,4 +1,3 @@
-import os
 import platform
 from ctypes import (
     CFUNCTYPE,
