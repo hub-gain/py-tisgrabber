@@ -216,10 +216,20 @@ class Camera:
 
         ic.set_frame_ready_callback(self._grabber, modified_callback, data)
 
+    def enable_trigger(self, enable: bool) -> None:
+        ic.enable_trigger(self._grabber, enable)
 
-if __name__ == "__main__":
+    def software_trigger(self) -> None:
+        ic.software_trigger(self._grabber)
+
+
+def main():
     grabber = ic.show_device_selection_dialog()
     with Camera(grabber) as cam:
         cam.start_live()
         ic.msg_box("Press OK to stop.", "Live image")
         cam.stop_live()
+
+
+if __name__ == "__main__":
+    main()
