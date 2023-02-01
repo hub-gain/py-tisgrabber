@@ -1,8 +1,10 @@
-from typing import Any, Optional, Self
+from ctypes import Structure
+from typing import Any, Callable, Self
 
 import numpy as np
 
 from .enums import CameraProperty, VideoProperty
+from .structs import HGRABBER
 from .wrapper import FilePath, ImageControl
 
 ic = ImageControl()
@@ -122,18 +124,8 @@ class VideoSetting:
 
 
 class Camera:
-    def __init__(self, device: Optional[FilePath] = None) -> None:
-        if device:
-            self._grabber = ic.create_grabber()
-            if str(device).endswith(".xml"):
-                ic.load_device_state_from_file(self._grabber, device)
-            else:
-                ic.open_dev_by_unique_name(self._grabber, device)
-        else:
-            self._grabber = ic.show_device_selection_dialog()
-
-        if not ic.is_dev_valid(self._grabber):
-            raise RuntimeError("No device opened.")
+    def __init__(self, grabber: HGRABBER) -> None:
+        self._grabber = grabber
 
         self.pan = CameraSetting(self._grabber, CameraProperty.PAN)
         self.tilt = CameraSetting(self._grabber, CameraProperty.TILT)
@@ -197,9 +189,37 @@ class Camera:
     def set_window_handle(self, handle: Any) -> None:
         ic.set_hwnd(self._grabber, handle)
 
+    def set_continuous_mode(self, enable: bool) -> None:
+        ic.set_continuous_mode(self._grabber, enable)
+
+    def set_frame_ready_callback(
+        self, callback: Callable[[Structure], None], data: Structure
+    ):
+        """
+        Set a callback function that is called when a new frame is ready.
+
+        Uses a simplified version of the callback signature as compared to the one
+        required by the IC Imaging Control library.
+
+        :param callback:
+            Function to call when a new frame is ready. Takes `data` as its only
+            argument.
+        :param data:
+            Payload of the callback function. Is passed as the only argument to
+            the `callback` function.
+        """
+
+        def modified_callback(grabber, ptr, n_frame, data: Structure):
+            # `grabber`, `ptr` and `n_frame` are not needed by the user but are required
+            # by the IC Imaging Control library.
+            callback(data)
+
+        ic.set_frame_ready_callback(self._grabber, modified_callback, data)
+
 
 if __name__ == "__main__":
-    with Camera() as cam:
+    grabber = ic.show_device_selection_dialog()
+    with Camera(grabber) as cam:
         cam.start_live()
         ic.msg_box("Press OK to stop.", "Live image")
         cam.stop_live()
