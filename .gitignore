@@ -154,3 +154,5 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+*.chw
