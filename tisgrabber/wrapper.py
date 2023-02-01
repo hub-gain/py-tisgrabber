@@ -319,7 +319,7 @@ class ImageControl:
     # def get_display_name()
 
     def open_dev_by_unique_name(self, grabber: HGRABBER, unique_name: str) -> None:
-        self._ic.IC_OpenDevByUniqueName(grabber, unique_name.encode("utf-8"))
+        return self._ic.IC_OpenDevByUniqueName(grabber, unique_name.encode("utf-8"))
 
     # def get_unique_name()
 
@@ -377,11 +377,17 @@ class ImageControl:
             device_lost_data,
         )
 
-    def set_continious_mode(self, grabber: HGRABBER, enable: bool) -> None:
+    def set_continuous_mode(self, grabber: HGRABBER, enable: bool) -> None:
+        """
+        Set continious mode.
+
+        In continuous mode, the callback is called for each frame, so that there is no
+        need to use IC_SnapImage etc.
+        """
         err = self._ic.IC_SetContinuousMode(grabber, int(enable))
         if err == IC_NOT_IN_LIVEMODE:
             raise NotInLivemodeError(
-                "Device is currently streaming, so setting continious mode failed."
+                "Device is currently streaming, so setting continuous mode failed."
             )
         if err == IC_NO_HANDLE:
             raise NoHandleError("Device handle is invalid.")
