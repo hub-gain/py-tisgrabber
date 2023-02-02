@@ -1,11 +1,11 @@
 from ctypes import Structure
-from typing import Any, Callable, Self
+from typing import Any, Self
 
 import numpy as np
 
 from .enums import CameraProperty, VideoProperty
 from .structs import HGRABBER
-from .wrapper import FilePath, ImageControl
+from .wrapper import FRAMEREADYCALLBACK, FilePath, ImageControl
 
 ic = ImageControl()
 
@@ -192,29 +192,9 @@ class Camera:
     def set_continuous_mode(self, enable: bool) -> None:
         ic.set_continuous_mode(self._grabber, enable)
 
-    def set_frame_ready_callback(
-        self, callback: Callable[[Structure], None], data: Structure
-    ):
-        """
-        Set a callback function that is called when a new frame is ready.
-
-        Uses a simplified version of the callback signature as compared to the one
-        required by the IC Imaging Control library.
-
-        :param callback:
-            Function to call when a new frame is ready. Takes `data` as its only
-            argument.
-        :param data:
-            Payload of the callback function. Is passed as the only argument to
-            the `callback` function.
-        """
-
-        def modified_callback(grabber, ptr, n_frame, data: Structure):
-            # `grabber`, `ptr` and `n_frame` are not needed by the user but are required
-            # by the IC Imaging Control library.
-            callback(data)
-
-        ic.set_frame_ready_callback(self._grabber, modified_callback, data)
+    def set_frame_ready_callback(self, callback: FRAMEREADYCALLBACK, data: Structure):
+        """Set a callback function that is called when a new frame is ready."""
+        ic.set_frame_ready_callback(self._grabber, callback, data)
 
     def enable_trigger(self, enable: bool) -> None:
         ic.enable_trigger(self._grabber, enable)

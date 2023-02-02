@@ -25,11 +25,16 @@ class CallbackPayload(Structure):
 
     def __init__(self, index: int):
         self.index = index
+        print(f"CallbackPayload {index} created")
 
 
-def frame_ready_callback(data: CallbackPayload):
+def frame_ready_callback(grabber, ptr, n_frame, data: CallbackPayload):
+    print(f"Frame ready callback {data.index}")
     data.image_data = cameras[data.index].get_image_data()
-    data.new_image_ready.emit(data)
+    # data.new_image_ready.emit(data.image_data)
+
+
+frame_ready_callback_pointer = ic.create_frame_ready_callback(frame_ready_callback)
 
 
 def on_close_button_clicked():
@@ -40,10 +45,14 @@ def on_close_button_clicked():
 
 
 def on_camera_selection_clicked(index):
+    print(f"Camera {index} clicked")
     grabber = ic.show_device_selection_dialog()
     if ic.is_dev_valid(grabber):
         cam = Camera(grabber)
-        cam.set_frame_ready_callback(frame_ready_callback, callback_payloads[index])
+        cam.set_frame_ready_callback(
+            frame_ready_callback_pointer,
+            callback_payloads[index],
+        )
         cam.set_window_handle(video_widgets[index].winId())
         cam.set_continuous_mode(False)
         cam.start_live()
@@ -87,14 +96,16 @@ if __name__ == "__main__":
     property_menu = main_menu.addMenu("&Properties")
     callback_payloads = []
     for i in range(n_cameras):
-        device_selection_action = QAction(f"&Select {i+1}", app)
+        device_selection_action = QAction(f"&Select {i}", app)
         device_selection_action.triggered.connect(
-            lambda: on_camera_selection_clicked(i)
+            lambda clicked, index=i: on_camera_selection_clicked(index)
         )
         camera_menu.addAction(device_selection_action)
 
-        dev_property_action = QAction(f"&Camera {i+1}", app)
-        dev_property_action.triggered.connect(lambda: on_camera_properties_clicked(i))
+        dev_property_action = QAction(f"&Camera {i}", app)
+        dev_property_action.triggered.connect(
+            lambda clicked, index=i: on_camera_properties_clicked(index)
+        )
         property_menu.addAction(dev_property_action)
 
         callback_payloads.append(CallbackPayload(i))
@@ -111,7 +122,6 @@ if __name__ == "__main__":
 
         brightness_bar = QProgressBar()
         brightness_bar.setRange(0, 256)
-        # brightness_bar.setOrientation(Qt.Horizontal)
         brightness_bar.setValue(128)
         inner_vbox_layout.addWidget(brightness_bar)
 
