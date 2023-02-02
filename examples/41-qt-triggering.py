@@ -2,7 +2,7 @@ import sys
 from ctypes import Structure
 
 import cv2
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import (
     QAction,
     QApplication,
@@ -19,8 +19,14 @@ from tisgrabber.wrapper import ImageControl
 ic = ImageControl()
 
 
-class CallbackPayload(Structure):
+class CallbackSignals(QObject):
     new_image_ready = pyqtSignal(object)
+
+
+callback_signals = CallbackSignals()
+
+
+class CallbackPayload(Structure):
     image_data = None
 
     def __init__(self, index: int):
@@ -28,10 +34,10 @@ class CallbackPayload(Structure):
         print(f"CallbackPayload {index} created")
 
 
-def frame_ready_callback(grabber, ptr, n_frame, data: CallbackPayload):
-    print(f"Frame ready callback {data.index}")
-    data.image_data = cameras[data.index].get_image_data()
-    # data.new_image_ready.emit(data.image_data)
+def frame_ready_callback(grabber, ptr, n_frame, payload: CallbackPayload):
+    print(f"Frame ready callback {payload.index}")
+    payload.image_data = cameras[payload.index].get_image_data()
+    callback_signals.new_image_ready.emit(payload)
 
 
 frame_ready_callback_pointer = ic.create_frame_ready_callback(frame_ready_callback)
@@ -70,8 +76,10 @@ def on_new_image(payload: CallbackPayload):
     print(f"New image received from camera {payload.index}")
     gray = cv2.cvtColor(payload.image_data, cv2.COLOR_BGR2GRAY)
     mean = cv2.mean(gray)
-    brightness_bar[payload.index].setValue(int(mean[0]))
+    brightness_bars[payload.index].setValue(int(mean[0]))
 
+
+callback_signals.new_image_ready.connect(on_new_image)
 
 if __name__ == "__main__":
     n_cameras = max(ic.get_device_count(), 1)
