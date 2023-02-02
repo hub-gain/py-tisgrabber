@@ -264,7 +264,7 @@ class ImageControl:
         return image
 
     def set_hwnd(self, grabber: HGRABBER, hwnd: Any) -> None:
-        err = self._ic.IC_SetHwnd(grabber, hwnd)
+        err = self._ic.IC_SetHWnd(grabber, int(hwnd))
         if err == IC_ERROR:
             raise ICError("An error occurred while setting the window handle.")
 
