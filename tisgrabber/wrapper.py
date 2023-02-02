@@ -24,10 +24,8 @@ from .exceptions import (
 from .tisgrabber import HCODEC, HFRAMEFILTER, HGRABBER, load_library
 
 FilePath = Union[str, Path]
-FrameReadyCallbackFunction = Callable[
-    [HGRABBER, ctypes.pointer, int, ctypes.Structure], None
-]
-DeviceLostCallbackFunction = Callable[[HGRABBER, ctypes.Structure], None]
+FRAMEREADYCALLBACK = Callable[[HGRABBER, ctypes.pointer, int, ctypes.Structure], None]
+DEVICELOSTCALLBACK = Callable[[HGRABBER, ctypes.Structure], None]
 
 
 class ImageControl:
@@ -351,22 +349,32 @@ class ImageControl:
     def msg_box(self, msg: str, title: str) -> None:
         return self._ic.IC_MsgBox(msg.encode("utf-8"), title.encode("utf-8"))
 
+    def create_frame_ready_callback(
+        self,
+        callback: Callable[
+            [HGRABBER, Any, int, ctypes.Structure],
+            None,
+        ],
+    ) -> FRAMEREADYCALLBACK:
+        return self._ic.FRAMEREADYCALLBACK(callback)
+
+    def create_device_lost_callback(self, callback: Callable[[HGRABBER, Any], None]):
+        return self._ic.DEVICELOSTCALLBACK(callback)
+
     def set_frame_ready_callback(
         self,
         grabber: HGRABBER,
-        callback: Callable[[HGRABBER, Any, int, ctypes.Structure], None],
+        callback: FRAMEREADYCALLBACK,
         data: ctypes.Structure,
     ) -> None:
-        self._ic.IC_SetFrameReadyCallback(
-            grabber, self._ic.FRAMEREADYCALLBACK(callback), data
-        )
+        self._ic.IC_SetFrameReadyCallback(grabber, callback, data)
 
     def set_callbacks(
         self,
         grabber: HGRABBER,
-        frame_ready_callback: FrameReadyCallbackFunction,
+        frame_ready_callback: FRAMEREADYCALLBACK,
         frame_ready_data: ctypes.Structure,
-        device_lost_callback: DeviceLostCallbackFunction,
+        device_lost_callback: DEVICELOSTCALLBACK,
         device_lost_data: ctypes.Structure,
     ) -> None:
         self._ic.IC_SetCallbacks(

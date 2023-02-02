@@ -22,10 +22,11 @@ ic = ImageControl()
 
 grabber = ic.show_device_selection_dialog()
 data = CallbackData()
+callback_pointer = ic.create_frame_ready_callback(frame_callback)
 
 if ic.is_dev_valid(grabber):
-    ic.set_frame_ready_callback(grabber, frame_callback, data)
-    ic.set_continious_mode(grabber, False)
+    ic.set_frame_ready_callback(grabber, callback_pointer, data)
+    ic.set_continuous_mode(grabber, False)
     ic.start_live(grabber)
     ic.msg_box("Click OK to stop", "Callback")
     ic.stop_live(grabber)
