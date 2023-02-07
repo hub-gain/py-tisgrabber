@@ -202,6 +202,14 @@ class Camera:
     def software_trigger(self) -> None:
         ic.software_trigger(self._grabber)
 
+    def set_roi(self, top, left, height, width) -> None:
+        filter_handle = ic.create_frame_filter("ROI")
+        ic.add_frame_filter_to_device(self._grabber, filter_handle)
+        ic.frame_filter_set_parameter_int(filter_handle, "Top", top)
+        ic.frame_filter_set_parameter_int(filter_handle, "Left", left)
+        ic.frame_filter_set_parameter_int(filter_handle, "Height", height)
+        ic.frame_filter_set_parameter_int(filter_handle, "Width", width)
+
 
 def main():
     grabber = ic.show_device_selection_dialog()
