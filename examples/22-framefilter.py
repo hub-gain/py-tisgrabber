@@ -1,7 +1,3 @@
-# FIXME: Fails with
-# ctypes.ArgumentError: argument 1: <class 'TypeError'>: expected
-# LP_LP_c_char_Array_80_Array_40 instance instead of c_char_p_Array_5
-
 from time import sleep
 
 from tisgrabber.wrapper import ImageControl
@@ -16,11 +12,13 @@ print("Available frame filters:")
 for filter in filter_list:
     print(f"{filter}")
 
-filter_handle = ic.create_frame_filter("Rotate Flip")
+filter = "Rotate Flip"
+filter_handle = ic.create_frame_filter(filter)
+print(f"Frame filter '{filter}' loaded. Available parameters are:")
 for i in range(filter_handle.ParameterCount):
     print(
         (
-            f"Name: {filter_handle.Parameters[i].Name}, "
+            f"Name: {filter_handle.Parameters[i].Name.decode('UTF-8')}, "
             f"Type: {filter_handle.Parameters[i].Type}"
         )
     )

@@ -421,10 +421,11 @@ def declare_functions(ic):
     ic.IC_GetAvailableFrameFilterCount.argtypes = None
 
     ic.IC_GetAvailableFrameFilters.restype = c_int
-    ic.IC_GetAvailableFrameFilters.argtypes = (
-        POINTER(POINTER((c_char * 80) * 40)),
-        c_int,
-    )
+    # NOTE: 22-framefilter.py did not work with these argtypes.
+    # ic.IC_GetAvailableFrameFilters.argtypes = (
+    #     POINTER(POINTER((c_char * 80) * 40)),
+    #     c_int,
+    # )
 
     ic.IC_CreateFrameFilter.restype = c_int
     ic.IC_CreateFrameFilter.argtypes = (c_char_p, POINTER(HFRAMEFILTER))

@@ -608,14 +608,17 @@ class ImageControl:
             *map(ctypes.addressof, string_buffers)
         )
         self._ic.IC_GetAvailableFrameFilters(pointers, filter_count)
-        frame_filters = [string_buffer.value for string_buffer in string_buffers]
+        frame_filters = [
+            string_buffer.value.decode("utf-8", "ignore")
+            for string_buffer in string_buffers
+        ]
         return frame_filters
 
     def create_frame_filter(self, name: str) -> HFRAMEFILTER:
         filter_handle = HFRAMEFILTER()
         err = self._ic.IC_CreateFrameFilter(name.encode("utf-8"), filter_handle)
         if err == IC_ERROR:
-            raise ICError("Frame filter load failed. ")
+            raise ICError("Frame filter load failed.")
         return filter_handle
 
     def add_frame_filter_to_device(
