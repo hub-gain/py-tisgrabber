@@ -13,6 +13,7 @@
 
 `py-tisgrabber` is a Python wrapper for the `tisgrabber.dll` and `tisgrabber_x64.dll` of the
 IC Imaging Control SDK, allowing the control of cameras by [The Imaging Source](https://www.theimagingsource.com).
+It works on Microsoft Windows and Python ≥ 3.11
 
 This is similar to [`py-ic-imaging-control`](https://github.com/morefigs/py-ic-imaging-control) but
 aims to be more pythonic (complies with PEP8 via black code style, proper use of Enums, @properties, some type hinting)
