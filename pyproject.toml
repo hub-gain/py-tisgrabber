@@ -24,7 +24,6 @@ dev = [
   "black>=22.8.0",
   "pre-commit>=2.20.0",
   "flake8>=5.0.4",
-  "rope>=1.3.0",
   "isort>=5.10.1",
   "Flake8-pyproject>=1.1.0.post0",
   "setuptools_scm>=6.2",
@@ -37,8 +36,8 @@ dlls = ["*.dll"]
 [tool.setuptools_scm]
 
 [project.urls]
-homepage = "https://github.com/bleykauf/py-tisgrabber"
-repository = "https://github.com/bleykauf/py-tisgrabber"
+homepage = "https://github.com/hub-gain/py-tisgrabber"
+repository = "https://github.com/hub-gain/py-tisgrabber"
 
 [tool.flake8]
 max-line-length = 88
