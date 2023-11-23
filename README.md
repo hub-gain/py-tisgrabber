@@ -11,6 +11,26 @@
 [![PyPI](https://img.shields.io/pypi/v/py_tisgrabber?color=blue)](https://pypi.org/project/py_tisgrabber/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+`py-tisgrabber` is a Python wrapper for the `tisgrabber.dll` and `tisgrabber_x64.dll` of the
+IC Imaging Control SDK, allowing the control of cameras by [The Imaging Source](https://www.theimagingsource.com).
+
+This is similar to [`py-ic-imaging-control`](https://github.com/morefigs/py-ic-imaging-control) but
+aims to be more pythonic (complies with PEP8 via black code style, proper use of Enums, @properties, some type hinting)
+and easier to read. Also, the [official examples](https://github.com/TheImagingSource/IC-Imaging-Control-Samples/tree/master/Python)
+have been recreated by using this wrapper.
+
+## Installation
+
+```
+pip install py-tisgrabber
+```
+
+For running the [examples](./examples/), install the additional dependencies with
+
+```
+pip install py-tisgrabber[examples]
+```
+
 ## Authors
 
 -   Bastian Leykauf (<https://github.com/bleykauf>)
